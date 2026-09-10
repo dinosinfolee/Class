@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AVL 트리 시뮬레이터</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&family=Noto+Serif+KR:wght@600&display=swap">
+<style>
+:root{
+  --bg:#ffffff;
+  --panel:#f7f7f5;
+  --panel2:#f1f0ee;
+  --line:#dcdbd7;
+  --line-strong:#c6c4bf;
+  --ink:#33322e;
+  --ink-soft:#5c5a54;
+  --muted:#79766f;
+  --blue:#2f6fd0;
+  --blue-soft:#e8f0fb;
+  --red:#c8402f;
+  --red-soft:#fbeae7;
+  --green:#0f7b6c;
+  --green-soft:#e3f1ee;
+  --amber:#b45f06;
+  --amber-soft:#fbf0e2;
+  --shadow:0 1px 2px rgba(15,15,15,.06),0 3px 8px rgba(15,15,15,.05);
+  --r:8px;
+  --sans:"IBM Plex Sans KR",system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:"IBM Plex Mono","IBM Plex Sans KR",ui-monospace,monospace;
+  --serif:"Noto Serif KR",Georgia,serif;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px;margin:0 auto;padding-block:32px 56px;padding-left:20px;padding-right:20px}
+
+/* ---------- header ---------- */
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:22px}
+h1{font-family:var(--serif);font-size:30px;font-weight:600;letter-spacing:-.01em;margin:0 0 6px;text-wrap:balance;color:var(--ink)}
+.sub{color:var(--muted);font-size:13.5px;margin:0;max-width:62ch}
+.sub code{font-family:var(--mono);font-size:12.5px;background:var(--panel2);padding:1px 5px;border-radius:4px;color:var(--ink-soft)}
+
+/* ---------- toolbar ---------- */
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:14px}
+.group{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:5px 6px}
+input[type=number]{width:82px;border:1px solid var(--line-strong);background:var(--bg);border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:14px;font-weight:600;color:var(--ink);text-align:center;-moz-appearance:textfield}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]:focus-visible{outline:2px solid var(--blue);outline-offset:1px;border-color:var(--blue)}
+input[type=number]:disabled{background:var(--panel2);color:var(--muted);border-color:var(--line);cursor:not-allowed}
+button{font-family:inherit;font-size:13px;color:var(--ink-soft);background:var(--bg);border:1px solid var(--line-strong);border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:0;transition:background .13s ease,color .13s ease,border-color .13s ease,transform .08s ease}
+button:hover:not(:disabled){background:var(--panel2);color:var(--ink);border-color:var(--line-strong)}
+button:active:not(:disabled){transform:translateY(1px)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.ico{width:32px;height:32px;flex:0 0 32px}
+.ico svg{width:16px;height:16px}
+.ico.pri{background:var(--blue);border-color:var(--blue);color:#fff}
+.ico.pri:hover:not(:disabled){background:#2a63bb;border-color:#2a63bb;color:#fff}
+.ico.dan:hover:not(:disabled){background:var(--red-soft);border-color:var(--red);color:var(--red)}
+.chip{height:30px;padding:0 11px;border-radius:6px;font-size:12.5px;font-weight:500;background:transparent;border-color:transparent;color:var(--muted)}
+.chip svg{width:14px;height:14px;opacity:0}
+.chip[aria-pressed=true]{background:var(--bg);border-color:var(--line-strong);color:var(--ink)}
+.chip[aria-pressed=true] svg{opacity:1;color:var(--green)}
+.sel{height:30px;border:1px solid var(--line-strong);background:var(--bg);border-radius:6px;font-family:inherit;font-size:12.5px;color:var(--ink-soft);padding:0 6px}
+.sel:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.lbl{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-left:4px}
+
+/* ---------- stage ---------- */
+.stage{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg);box-shadow:var(--shadow)}
+.narrate{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--panel);border-bottom:1px solid var(--line);min-height:46px}
+.dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px;background:var(--line-strong)}
+.dot.b{background:var(--blue)}.dot.r{background:var(--red)}.dot.g{background:var(--green)}.dot.a{background:var(--amber)}
+#msg{font-size:13.5px;color:var(--ink);flex:1;min-width:0}
+#msg b{font-family:var(--mono);font-weight:600}
+.canvas{height:clamp(280px,46vh,420px);background:
+  radial-gradient(circle at 1px 1px,#e6e5e1 1px,transparent 0) 0 0/22px 22px,var(--bg)}
+.canvas svg{width:100%;height:100%;display:block}
+.empty{height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px}
+
+/* ---------- transport ---------- */
+.transport{display:flex;align-items:center;gap:8px;padding:9px 12px;border-top:1px solid var(--line);background:var(--panel)}
+.ico.sm{width:28px;height:28px;flex:0 0 28px}
+.ico.sm svg{width:14px;height:14px}
+.track{flex:1;height:4px;border-radius:2px;background:var(--line);overflow:hidden;min-width:40px}
+.track i{display:block;height:100%;background:var(--blue);width:0;transition:width .18s ease}
+.count{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* ---------- lower grid ---------- */
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:16px;margin-top:16px}
+section.box{border:1px solid var(--line);border-radius:12px;background:var(--bg);overflow:hidden}
+.box h2{margin:0;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:11px 14px 0}
+.box .body{padding:12px 14px 14px}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:11px}
+.stat{background:var(--bg);padding:10px 14px}
+.stat .k{font-size:11px;color:var(--muted)}
+.stat .v{font-family:var(--mono);font-size:19px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.rots{display:flex;gap:6px;flex-wrap:wrap;padding:12px 14px 14px}
+.rot{flex:1 1 62px;border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--panel)}
+.rot .k{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--amber);letter-spacing:.04em}
+.rot .v{font-family:var(--mono);font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+
+.travbtns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tb{height:28px;padding:0 10px;border-radius:6px;font-size:12.5px}
+.seq{font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 11px;min-height:38px;word-break:break-all;line-height:1.7}
+.seq .on{background:var(--blue);color:#fff;border-radius:3px;padding:1px 4px;margin:0 1px}
+.seq .off{color:var(--muted)}
+
+#log{list-style:none;margin:0;padding:0;max-height:190px;overflow-y:auto}
+#log li{display:flex;gap:9px;padding:6px 0;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-soft)}
+#log li:first-child{border-top:0}
+#log li .dot{margin-top:7px}
+#log li b{font-family:var(--mono);font-weight:600;color:var(--ink)}
+#log .none{color:var(--muted);border:0;padding-top:2px}
+
+/* ---------- svg tree ---------- */
+.edge{stroke:var(--line-strong);stroke-width:1.6;fill:none}
+.node circle{fill:var(--bg);stroke:var(--line-strong);stroke-width:1.6}
+.node .val{font-family:var(--mono);font-size:13px;font-weight:600;fill:var(--ink);text-anchor:middle;dominant-baseline:central}
+.node .bf,.node .ht{font-family:var(--mono);font-size:10px;font-weight:600;dominant-baseline:central}
+.node .bf{fill:var(--muted);text-anchor:start}
+.node .bf.bad{fill:var(--red)}
+.node .ht{fill:var(--blue);text-anchor:end;opacity:.85}
+.node.path circle{fill:var(--blue-soft);stroke:var(--blue)}
+.node.focus circle{fill:var(--blue);stroke:var(--blue)}
+.node.focus .val{fill:#fff}
+.node.danger circle{fill:var(--red-soft);stroke:var(--red);stroke-width:2.2}
+.node.danger .val{fill:var(--red)}
+.node.ok circle{fill:var(--green-soft);stroke:var(--green);stroke-width:2}
+.node.ok .val{fill:var(--green)}
+
+footer{margin-top:22px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+@media (max-width:820px){
+  .grid{grid-template-columns:minmax(0,1fr)}
+  h1{font-size:24px}
+  .bar{gap:6px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style>
+html{-webkit-text-size-adjust:100%}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>AVL 트리 시뮬레이터</h1>
+  <p class="sub">삽입·삭제 과정에서 균형 인수(balance factor)가 <code>|BF| &gt; 1</code>이 되는 순간과 네 가지 회전(LL·LR·RR·RL)이 적용되는 과정을 단계별로 보여 준다.</p>
+</header>
+
+<div class="bar">
+  <div class="group">
+    <input type="number" id="val" min="1" max="999" value="55" placeholder="값" aria-label="값 입력">
+    <button class="ico pri" id="bIns" title="삽입 (Enter)" aria-label="삽입">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M8 3.2v9.6M3.2 8h9.6"/></svg>
+    </button>
+    <button class="ico dan" id="bDel" title="삭제" aria-label="삭제">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.8 4.4h10.4M6.2 4.4V2.9h3.6v1.5M4.3 4.4l.6 8.4h6.2l.6-8.4"/></svg>
+    </button>
+    <button class="ico" id="bFind" title="탐색" aria-label="탐색">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="7" cy="7" r="4.2"/><path d="M10.2 10.2l3.1 3.1"/></svg>
+    </button>
+  </div>
+
+  <div class="group">
+    <button class="ico" id="bRand" title="임의의 값 삽입" aria-label="임의의 값 삽입">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="2.6" width="10.8" height="10.8" rx="2.4"/><circle cx="6" cy="6" r=".95" fill="currentColor" stroke="none"/><circle cx="10" cy="10" r=".95" fill="currentColor" stroke="none"/><circle cx="10" cy="6" r=".95" fill="currentColor" stroke="none"/></svg>
+    </button>
+    <button class="ico" id="bSample" title="예시 트리 불러오기" aria-label="예시 트리 불러오기">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="3.4" r="1.7"/><circle cx="3.6" cy="12.4" r="1.7"/><circle cx="12.4" cy="12.4" r="1.7"/><path d="M6.9 4.8L4.7 11M9.1 4.8l2.2 6.2"/></svg>
+    </button>
+    <button class="ico dan" id="bClear" title="전체 지우기" aria-label="전체 지우기">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13.2 7.2A5.3 5.3 0 1 1 11.6 3.6M13.4 2.2v3.3h-3.3"/></svg>
+    </button>
+  </div>
+
+  <div class="group">
+    <span class="lbl">표시</span>
+    <button class="chip" id="tBf" aria-pressed="true">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 8.4l3 3 6.2-7"/></svg>균형 인수
+    </button>
+    <button class="chip" id="tHt" aria-pressed="false">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 8.4l3 3 6.2-7"/></svg>높이
+    </button>
+    <select class="sel" id="speed" aria-label="재생 속도">
+      <option value="900">느리게</option>
+      <option value="560" selected>보통</option>
+      <option value="300">빠르게</option>
+    </select>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="narrate"><span class="dot" id="dot"></span><span id="msg">예시 트리를 불러왔다. 값을 입력하고 삽입해 보자.</span></div>
+  <div class="canvas" id="canvas"></div>
+  <div class="transport">
+    <button class="ico sm" id="bPrev" title="이전 단계" aria-label="이전 단계">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 3.2L5.4 8l5.1 4.8M4 3.2v9.6"/></svg>
+    </button>
+    <button class="ico sm" id="bPlay" title="재생 / 일시정지" aria-label="재생 또는 일시정지">
+      <svg id="icPlay" viewBox="0 0 16 16" fill="currentColor"><path d="M4.6 3.1l7.6 4.6a.35.35 0 0 1 0 .6l-7.6 4.6a.35.35 0 0 1-.53-.3V3.4a.35.35 0 0 1 .53-.3z"/></svg>
+      <svg id="icPause" viewBox="0 0 16 16" fill="currentColor" hidden><rect x="4" y="3.2" width="2.9" height="9.6" rx=".7"/><rect x="9.1" y="3.2" width="2.9" height="9.6" rx=".7"/></svg>
+    </button>
+    <button class="ico sm" id="bNext" title="다음 단계" aria-label="다음 단계">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 3.2L10.6 8l-5.1 4.8M12 3.2v9.6"/></svg>
+    </button>
+    <span class="track"><i id="prog"></i></span>
+    <span class="count" id="count">단계 0 / 0</span>
+  </div>
+</div>
+
+<div class="grid">
+  <section class="box">
+    <h2>트리 상태</h2>
+    <div class="stats">
+      <div class="stat"><div class="k">노드 수</div><div class="v" id="sCnt">0</div></div>
+      <div class="stat"><div class="k">높이</div><div class="v" id="sH">0</div></div>
+      <div class="stat"><div class="k">총 회전</div><div class="v" id="sR">0</div></div>
+    </div>
+    <div class="rots">
+      <div class="rot"><div class="k">LL</div><div class="v" id="rLL">0</div></div>
+      <div class="rot"><div class="k">LR</div><div class="v" id="rLR">0</div></div>
+      <div class="rot"><div class="k">RR</div><div class="v" id="rRR">0</div></div>
+      <div class="rot"><div class="k">RL</div><div class="v" id="rRL">0</div></div>
+    </div>
+    <div class="body" style="padding-top:0">
+      <div class="travbtns">
+        <button class="tb" data-t="pre">전위 순회</button>
+        <button class="tb" data-t="in">중위 순회</button>
+        <button class="tb" data-t="post">후위 순회</button>
+      </div>
+      <div class="seq" id="seq">중위 순회 결과는 항상 오름차순으로 정렬된다.</div>
+    </div>
+  </section>
+
+  <section class="box">
+    <h2>실행 기록</h2>
+    <div class="body"><ul id="log"><li class="none">아직 기록이 없다.</li></ul></div>
+  </section>
+</div>
+
+<footer>균형 인수 = (왼쪽 서브트리 높이) − (오른쪽 서브트리 높이). 모든 노드에서 −1, 0, +1 중 하나여야 AVL 조건을 만족한다.</footer>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const NS="http://www.w3.org/2000/svg";
+const GAP=60,LV=76,R=19;
+const RM=matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+/* ---------------- AVL core ---------------- */
+let root=null,uid=1;
+const H=n=>n?n.h:0;
+const BF=n=>n?H(n.l)-H(n.r):0;
+const upd=n=>{n.h=1+Math.max(H(n.l),H(n.r))};
+const fmt=b=>(b>0?"+":"")+b;
+
+let REC=null;
+function snap(n){return n?{id:n.id,v:n.v,h:n.h,l:snap(n.l),r:snap(n.r)}:null}
+function push(msg,hi,tone,log,rot){
+  if(!REC)return;
+  REC.push({t:snap(root),hi:hi||{},msg,tone:tone||"",log:!!log,rot:rot||null});
+}
+function relink(p,old,nw){
+  if(!p){root=nw;if(nw)nw.p=null;}
+  else{if(p.l===old)p.l=nw;else p.r=nw;if(nw)nw.p=p;}
+}
+function rotR(y){const x=y.l,T=x.r,p=y.p;x.r=y;y.p=x;y.l=T;if(T)T.p=y;relink(p,y,x);upd(y);upd(x);return x}
+function rotL(x){const y=x.r,T=y.l,p=x.p;y.l=x;x.p=y;x.r=T;if(T)T.p=x;relink(p,x,y);upd(x);upd(y);return y}
+
+function rebalance(n,stopFirst){
+  while(n){
+    upd(n);
+    const b=BF(n);
+    if(Math.abs(b)>1){
+      push(`노드 <b>${n.v}</b>의 균형 인수가 <b>${fmt(b)}</b> — AVL 조건이 깨졌다.`,{danger:[n.v]},"r",true);
+      let nr,type;
+      if(b>1){
+        if(BF(n.l)>=0){type="LL";push(`<b>LL</b> 유형: <b>${n.v}</b>을(를) 기준으로 오른쪽 회전한다.`,{danger:[n.v],path:[n.l.v]},"a");nr=rotR(n);}
+        else{type="LR";push(`<b>LR</b> 유형: 먼저 <b>${n.l.v}</b>을(를) 기준으로 왼쪽 회전한다.`,{danger:[n.v],path:[n.l.v,n.l.r.v]},"a");rotL(n.l);
+             push(`왼쪽 회전으로 LL 형태가 되었다. 이제 <b>${n.v}</b>을(를) 기준으로 오른쪽 회전한다.`,{danger:[n.v],path:[n.l.v]},"a");nr=rotR(n);}
+      }else{
+        if(BF(n.r)<=0){type="RR";push(`<b>RR</b> 유형: <b>${n.v}</b>을(를) 기준으로 왼쪽 회전한다.`,{danger:[n.v],path:[n.r.v]},"a");nr=rotL(n);}
+        else{type="RL";push(`<b>RL</b> 유형: 먼저 <b>${n.r.v}</b>을(를) 기준으로 오른쪽 회전한다.`,{danger:[n.v],path:[n.r.v,n.r.l.v]},"a");rotR(n.r);
+             push(`오른쪽 회전으로 RR 형태가 되었다. 이제 <b>${n.v}</b>을(를) 기준으로 왼쪽 회전한다.`,{danger:[n.v],path:[n.r.v]},"a");nr=rotL(n);}
+      }
+      push(`<b>${type}</b> 회전 완료 — 부분 트리의 새 루트는 <b>${nr.v}</b>이다.`,{ok:[nr.v]},"g",true,type);
+      n=nr.p;
+      if(stopFirst)break;
+      continue;
+    }
+    n=n.p;
+  }
+}
+
+function insert(v){
+  if(!root){root={id:uid++,v,h:1,l:null,r:null,p:null};push(`빈 트리이므로 <b>${v}</b>이(가) 루트가 된다.`,{focus:[v]},"g",true);return true}
+  let cur=root;const path=[];
+  while(true){
+    path.push(cur.v);
+    push(`<b>${v}</b>와(과) <b>${cur.v}</b>을(를) 비교한다.`,{path:path.slice(0,-1),focus:[cur.v]},"b");
+    if(v===cur.v){push(`<b>${v}</b>은(는) 이미 트리에 있다. AVL 트리는 중복 값을 저장하지 않는다.`,{danger:[cur.v]},"r",true);return false}
+    const goL=v<cur.v;
+    if(goL&&!cur.l||!goL&&!cur.r)break;
+    push(`<b>${v}</b> ${goL?"&lt;":"&gt;"} <b>${cur.v}</b> → ${goL?"왼쪽":"오른쪽"} 서브트리로 내려간다.`,{path,focus:[cur.v]},"b");
+    cur=goL?cur.l:cur.r;
+  }
+  const nn={id:uid++,v,h:1,l:null,r:null,p:cur};
+  if(v<cur.v)cur.l=nn;else cur.r=nn;
+  push(`<b>${cur.v}</b>의 ${v<cur.v?"왼쪽":"오른쪽"} 자식으로 <b>${v}</b>을(를) 삽입한다.`,{path,focus:[v]},"g",true);
+  push("삽입 지점에서 루트 방향으로 올라가며 높이와 균형 인수를 갱신한다.",{path:path.concat(v)},"b");
+  rebalance(cur,true);
+  return true;
+}
+
+function remove(v){
+  let cur=root;const path=[];
+  while(cur&&cur.v!==v){
+    path.push(cur.v);
+    push(`<b>${v}</b>와(과) <b>${cur.v}</b>을(를) 비교한다.`,{path:path.slice(0,-1),focus:[cur.v]},"b");
+    cur=v<cur.v?cur.l:cur.r;
+  }
+  if(!cur){push(`<b>${v}</b>은(는) 트리에 없어 삭제할 수 없다.`,{path},"r",true);return false}
+  push(`삭제할 노드 <b>${v}</b>을(를) 찾았다.`,{path,danger:[v]},"r",true);
+  if(cur.l&&cur.r){
+    let s=cur.r;while(s.l)s=s.l;
+    push(`자식이 둘이므로 중위 후속자 <b>${s.v}</b>을(를) 찾는다.`,{danger:[v],focus:[s.v]},"a");
+    const par=s.p;
+    relink(s.p,s,s.r);
+    cur.v=s.v;
+    push(`<b>${s.v}</b>의 값을 삭제 위치로 옮기고 후속자 노드를 제거한다.`,{focus:[s.v]},"g",true);
+    rebalance(par===cur?cur:par,false);
+  }else{
+    const c=cur.l||cur.r,p=cur.p;
+    relink(p,cur,c);
+    push(c?`자식이 하나이므로 <b>${c.v}</b>이(가) 자리를 대신한다.`:`말단 노드이므로 그대로 제거한다.`,c?{focus:[c.v]}:{},"g",true);
+    rebalance(p,false);
+  }
+  return true;
+}
+
+function search(v){
+  let cur=root;const path=[];
+  while(cur){
+    push(`<b>${v}</b>와(과) <b>${cur.v}</b>을(를) 비교한다.`,{path:path.slice(),focus:[cur.v]},"b");
+    if(v===cur.v){push(`<b>${v}</b>을(를) 찾았다. 비교 횟수는 <b>${path.length+1}</b>회이다.`,{path,ok:[v]},"g",true);return}
+    path.push(cur.v);
+    cur=v<cur.v?cur.l:cur.r;
+  }
+  push(`<b>${v}</b>은(는) 트리에 없다. 비교 횟수는 <b>${path.length}</b>회이다.`,{path},"r",true);
+}
+
+/* ---------------- rendering ---------------- */
+const canvas=$("#canvas");
+const pos=new Map();
+let svg=null,nodeEls=[],edgeEls=[],raf=0;
+
+function layout(t){
+  const nodes=[],edges=[];let i=0,md=0;
+  (function walk(n,d){
+    if(!n)return;
+    walk(n.l,d+1);
+    n._x=(i++)*GAP;n._y=d*LV;md=Math.max(md,d);
+    walk(n.r,d+1);
+    nodes.push(n);
+    if(n.l)edges.push([n,n.l]);
+    if(n.r)edges.push([n,n.r]);
+  })(t,0);
+  const cw=Math.max(280,canvas.clientWidth||900),ch=Math.max(200,canvas.clientHeight||340);
+  const padX=54,padY=44;
+  const contW=(i-1)*GAP+padX*2,contH=md*LV+padY*2;
+  let vw=Math.max(contW,cw),vh=Math.max(contH,ch);
+  const ar=cw/ch;
+  if(vw/vh>ar)vh=vw/ar;else vw=vh*ar;
+  const cx=((i-1)*GAP)/2,cy=(md*LV)/2;
+  return{nodes,edges,vb:`${(cx-vw/2).toFixed(1)} ${(cy-vh/2).toFixed(1)} ${vw.toFixed(1)} ${vh.toFixed(1)}`};
+}
+
+function draw(t,hi){
+  hi=hi||{};
+  if(!t){canvas.innerHTML='<div class="empty">트리가 비어 있다. 값을 삽입해 보자.</div>';pos.clear();svg=null;return}
+  const{nodes,edges,vb}=layout(t);
+  const cls=new Map();
+  (hi.path||[]).forEach(v=>cls.set(v,"path"));
+  (hi.ok||[]).forEach(v=>cls.set(v,"ok"));
+  (hi.focus||[]).forEach(v=>cls.set(v,"focus"));
+  (hi.danger||[]).forEach(v=>cls.set(v,"danger"));
+
+  canvas.innerHTML="";
+  svg=document.createElementNS(NS,"svg");
+  svg.setAttribute("viewBox",vb);
+  svg.setAttribute("preserveAspectRatio","xMidYMid meet");
+  canvas.appendChild(svg);
+
+  const parent=new Map();
+  edges.forEach(([a,b])=>parent.set(b.id,a));
+  const live=new Set(nodes.map(n=>n.id));
+  [...pos.keys()].forEach(k=>{if(!live.has(k))pos.delete(k)});
+  nodes.forEach(n=>{
+    if(!pos.has(n.id)){
+      const p=parent.get(n.id),src=(p&&pos.get(p))||{x:n._x,y:n._y};
+      pos.set(n.id,{x:src.x,y:src.y,s:0});
+    }
+    pos.get(n.id).tx=n._x;pos.get(n.id).ty=n._y;pos.get(n.id).ts=1;
+  });
+
+  edgeEls=edges.map(([a,b])=>{
+    const l=document.createElementNS(NS,"line");
+    l.setAttribute("class","edge");svg.appendChild(l);
+    return{el:l,a:a.id,b:b.id};
+  });
+  const showBf=$("#tBf").getAttribute("aria-pressed")==="true";
+  const showHt=$("#tHt").getAttribute("aria-pressed")==="true";
+  nodeEls=nodes.map(n=>{
+    const g=document.createElementNS(NS,"g");
+    g.setAttribute("class","node"+(cls.get(n.v)?" "+cls.get(n.v):""));
+    const c=document.createElementNS(NS,"circle");
+    c.setAttribute("r",R);g.appendChild(c);
+    const tx=document.createElementNS(NS,"text");
+    tx.setAttribute("class","val");tx.setAttribute("y",1);tx.textContent=n.v;g.appendChild(tx);
+    const b=H(n.l)-H(n.r);
+    if(showBf){
+      const e=document.createElementNS(NS,"text");
+      e.setAttribute("class","bf"+(Math.abs(b)>1?" bad":""));
+      e.setAttribute("x",R+4);e.setAttribute("y",-R+2);e.textContent=fmt(b);g.appendChild(e);
+    }
+    if(showHt){
+      const e=document.createElementNS(NS,"text");
+      e.setAttribute("class","ht");e.setAttribute("x",-R-4);e.setAttribute("y",-R+2);e.textContent="h"+n.h;g.appendChild(e);
+    }
+    svg.appendChild(g);
+    return{el:g,id:n.id};
+  });
+  tick();
+}
+
+function tick(){
+  cancelAnimationFrame(raf);
+  let moving=false;
+  pos.forEach(p=>{
+    const k=RM?1:0.24;
+    p.x+=(p.tx-p.x)*k;p.y+=(p.ty-p.y)*k;p.s+=((p.ts??1)-p.s)*k;
+    if(Math.abs(p.tx-p.x)>0.4||Math.abs(p.ty-p.y)>0.4||Math.abs(1-p.s)>0.01)moving=true;
+    else{p.x=p.tx;p.y=p.ty;p.s=1}
+  });
+  nodeEls.forEach(o=>{
+    const p=pos.get(o.id);if(!p)return;
+    o.el.setAttribute("transform",`translate(${p.x.toFixed(2)},${p.y.toFixed(2)}) scale(${p.s.toFixed(3)})`);
+  });
+  edgeEls.forEach(o=>{
+    const a=pos.get(o.a),b=pos.get(o.b);if(!a||!b)return;
+    o.el.setAttribute("x1",a.x.toFixed(2));o.el.setAttribute("y1",a.y.toFixed(2));
+    o.el.setAttribute("x2",b.x.toFixed(2));o.el.setAttribute("y2",b.y.toFixed(2));
+    o.el.setAttribute("opacity",b.s.toFixed(2));
+  });
+  if(moving)raf=requestAnimationFrame(tick);
+}
+
+/* ---------------- playback ---------------- */
+let S=[],si=-1,playing=false,timer=null,seqWatch=null;
+const seen=new Set();
+const rots={LL:0,LR:0,RR:0,RL:0};
+const delay=()=>+$("#speed").value;
+
+function stats(t){
+  if(t===undefined)t=si>=0&&S[si]?S[si].t:snap(root);
+  let c=0;(function w(n){if(!n)return;c++;w(n.l);w(n.r)})(t);
+  const d={...rots};
+  for(let i=si+1;i<S.length;i++)if(S[i].rot)d[S[i].rot]--;
+  $("#sCnt").textContent=c;
+  $("#sH").textContent=t?t.h:0;
+  $("#sR").textContent=d.LL+d.LR+d.RR+d.RL;
+  $("#rLL").textContent=d.LL;$("#rLR").textContent=d.LR;
+  $("#rRR").textContent=d.RR;$("#rRL").textContent=d.RL;
+}
+function addLog(msg,tone){
+  const ul=$("#log");
+  const none=ul.querySelector(".none");if(none)none.remove();
+  const li=document.createElement("li");
+  li.innerHTML=`<span class="dot ${tone||""}"></span><span>${msg}</span>`;
+  ul.prepend(li);
+  while(ul.children.length>40)ul.lastElementChild.remove();
+}
+let locked=false;
+function setLock(on){
+  if(locked===on)return;
+  locked=on;
+  ["#val","#bIns","#bDel","#bFind","#bRand","#bSample"].forEach(s=>{$(s).disabled=on});
+  document.querySelectorAll(".tb").forEach(b=>{b.disabled=on});
+  if(!on)$("#val").focus({preventScroll:true});
+}
+function sync(){
+  setLock(playing);
+  $("#count").textContent=`단계 ${Math.max(si+1,0)} / ${S.length}`;
+  $("#prog").style.width=S.length?((si+1)/S.length*100)+"%":"0";
+  $("#bPrev").disabled=si<=0;
+  $("#bNext").disabled=si>=S.length-1;
+  $("#bPlay").disabled=S.length===0||si>=S.length-1;
+  $("#icPlay").hidden=playing;$("#icPause").hidden=!playing;
+}
+function go(i){
+  si=i;const s=S[i];if(!s)return;
+  draw(s.t,s.hi);
+  $("#msg").innerHTML=s.msg;
+  $("#dot").className="dot "+(s.tone||"");
+  if(s.log&&!seen.has(s)){seen.add(s);addLog(s.msg,s.tone)}
+  if(seqWatch&&s.seq!==undefined)renderSeq(seqWatch,s.seq);
+  stats();sync();
+}
+function stop(){playing=false;clearTimeout(timer);sync()}
+function schedule(){
+  clearTimeout(timer);
+  timer=setTimeout(()=>{
+    if(!playing)return;
+    if(si<S.length-1){go(si+1);si<S.length-1?schedule():stop()}else stop();
+  },delay());
+}
+function play(){if(si>=S.length-1)return;playing=true;sync();schedule()}
+
+function run(steps,finalMsg){
+  stop();seen.clear();
+  S=steps;si=-1;
+  if(!S.length){draw(snap(root),{});stats();return}
+  go(0);play();
+}
+
+/* ---------------- operations ---------------- */
+function readVal(){
+  const v=parseInt($("#val").value,10);
+  if(isNaN(v)||v<1||v>999){
+    $("#msg").innerHTML="1 이상 999 이하의 정수를 입력해야 한다.";
+    $("#dot").className="dot r";$("#val").focus();return null;
+  }
+  return v;
+}
+function clearInput(){$("#val").value="";if(!locked)$("#val").focus({preventScroll:true})}
+function record(fn){
+  REC=[];
+  try{fn()}
+  catch(e){REC.push({t:snap(root),hi:{},msg:"실행 중 오류가 발생했다: "+e.message,tone:"r",log:true,rot:null})}
+  const steps=REC;REC=null;
+  seqWatch=null;
+  steps.forEach(s=>{if(s.rot)rots[s.rot]++});
+  return steps;
+}
+$("#bIns").onclick=()=>{const v=readVal();if(v===null)return;run(record(()=>{if(root)push(`<b>${v}</b> 삽입을 시작한다. 루트부터 자리를 찾는다.`,{},"b");insert(v)}));clearInput()};
+$("#bDel").onclick=()=>{const v=readVal();if(v===null)return;if(!root){$("#msg").textContent="트리가 비어 있다.";$("#dot").className="dot r";return}run(record(()=>{push(`<b>${v}</b> 삭제를 시작한다.`,{},"b");remove(v)}));clearInput()};
+$("#bFind").onclick=()=>{const v=readVal();if(v===null)return;if(!root){$("#msg").textContent="트리가 비어 있다.";$("#dot").className="dot r";return}run(record(()=>{push(`<b>${v}</b> 탐색을 시작한다.`,{},"b");search(v)}));clearInput()};
+$("#bRand").onclick=()=>{
+  const used=new Set();(function w(n){if(!n)return;used.add(n.v);w(n.l);w(n.r)})(root);
+  let v;let guard=0;do{v=Math.floor(Math.random()*99)+1;guard++}while(used.has(v)&&guard<400);
+  run(record(()=>{if(root)push(`임의의 값 <b>${v}</b> 삽입을 시작한다.`,{},"b");insert(v)}));
+};
+$("#bClear").onclick=()=>{
+  stop();root=null;S=[];si=-1;pos.clear();
+  rots.LL=rots.LR=rots.RR=rots.RL=0;
+  draw(null,{});stats();sync();
+  $("#msg").textContent="트리를 모두 지웠다.";$("#dot").className="dot";
+  $("#seq").textContent="중위 순회 결과는 항상 오름차순으로 정렬된다.";
+  addLog("트리 초기화","");
+};
+$("#bSample").onclick=()=>{loadSample();$("#msg").textContent="예시 트리를 다시 불러왔다.";$("#dot").className="dot g";addLog("예시 트리 불러오기","g")};
+
+$("#bPrev").onclick=()=>{stop();if(si>0)go(si-1)};
+$("#bNext").onclick=()=>{stop();if(si<S.length-1)go(si+1)};
+$("#bPlay").onclick=()=>{playing?stop():play()};
+$("#val").addEventListener("keydown",e=>{if(e.key==="Enter")$("#bIns").click()});
+[...document.querySelectorAll(".chip")].forEach(b=>b.onclick=()=>{
+  b.setAttribute("aria-pressed",b.getAttribute("aria-pressed")==="true"?"false":"true");
+  draw(si>=0&&S[si]?S[si].t:snap(root),si>=0&&S[si]?S[si].hi:{});
+});
+
+/* traversal */
+[...document.querySelectorAll(".tb")].forEach(b=>b.onclick=()=>{
+  if(!root){$("#seq").textContent="트리가 비어 있다.";return}
+  const mode=b.dataset.t,out=[];
+  (function w(n){if(!n)return;
+    if(mode==="pre")out.push(n.v);
+    w(n.l);
+    if(mode==="in")out.push(n.v);
+    w(n.r);
+    if(mode==="post")out.push(n.v);
+  })(root);
+  const name={pre:"전위",in:"중위",post:"후위"}[mode];
+  const steps=out.map((v,i)=>({
+    t:snap(root),hi:{path:out.slice(0,i),focus:[v]},
+    msg:`${name} 순회 — <b>${i+1}</b>번째 방문 노드는 <b>${v}</b>이다.`,
+    tone:"b",log:false,rot:null,seq:i
+  }));
+  steps.push({t:snap(root),hi:{ok:out.slice()},msg:`${name} 순회 완료: <b>${out.join(" · ")}</b>`,tone:"g",log:true,rot:null,seq:out.length-1});
+  seqWatch=out;
+  renderSeq(out,-1);
+  run(steps);
+});
+function renderSeq(list,upto){
+  $("#seq").innerHTML=list.map((v,i)=>`<span class="${i<=upto?"on":"off"}">${v}</span>`).join(" ");
+}
+
+/* ---------------- init ---------------- */
+function loadSample(){
+  stop();root=null;pos.clear();S=[];si=-1;
+  rots.LL=rots.LR=rots.RR=rots.RL=0;
+  REC=null;
+  [50,30,70,20,40,60,80,10,25,65].forEach(v=>{
+    if(!root){root={id:uid++,v,h:1,l:null,r:null,p:null};return}
+    let c=root;
+    while(true){
+      if(v===c.v)return;
+      const goL=v<c.v;
+      if(goL&&!c.l||!goL&&!c.r){const nn={id:uid++,v,h:1,l:null,r:null,p:c};if(goL)c.l=nn;else c.r=nn;rebalance(c,true);break}
+      c=goL?c.l:c.r;
+    }
+  });
+  seqWatch=null;
+  draw(snap(root),{});stats();sync();
+  $("#seq").textContent="중위 순회 결과는 항상 오름차순으로 정렬된다.";
+}
+loadSample();
+$("#count").textContent="단계 0 / 0";
+let rt=0;
+window.addEventListener("resize",()=>{
+  clearTimeout(rt);
+  rt=setTimeout(()=>{
+    const s=si>=0&&S[si]?S[si]:null;
+    draw(s?s.t:snap(root),s?s.hi:{});
+  },120);
+});
+</script>
+</body>
+</html>
