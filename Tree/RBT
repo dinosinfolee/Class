@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>레드-블랙 트리 시뮬레이터</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&family=Noto+Serif+KR:wght@600&display=swap">
+<style>
+:root{
+  --bg:#ffffff;
+  --panel:#f7f7f5;
+  --panel2:#f1f0ee;
+  --line:#dcdbd7;
+  --line-strong:#c6c4bf;
+  --ink:#33322e;
+  --ink-soft:#5c5a54;
+  --muted:#79766f;
+  --blue:#2f6fd0;
+  --blue-soft:#e8f0fb;
+  --red:#c8402f;
+  --red-soft:#fbeae7;
+  --green:#0f7b6c;
+  --green-soft:#e3f1ee;
+  --amber:#b45f06;
+  --node-red:#d2432f;
+  --node-red-line:#a3311f;
+  --node-black:#2e2d2a;
+  --shadow:0 1px 2px rgba(15,15,15,.06),0 3px 8px rgba(15,15,15,.05);
+  --r:8px;
+  --sans:"IBM Plex Sans KR",system-ui,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:"IBM Plex Mono","IBM Plex Sans KR",ui-monospace,monospace;
+  --serif:"Noto Serif KR",Georgia,serif;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word}
+.wrap{max-width:1040px;margin:0 auto;padding-block:32px 56px;padding-left:20px;padding-right:20px}
+
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:22px}
+h1{font-family:var(--serif);font-size:30px;font-weight:600;letter-spacing:-.01em;margin:0 0 6px;text-wrap:balance;color:var(--ink)}
+.sub{color:var(--muted);font-size:13.5px;margin:0;max-width:64ch}
+.sub code{font-family:var(--mono);font-size:12.5px;background:var(--panel2);padding:1px 5px;border-radius:4px;color:var(--ink-soft)}
+
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:14px}
+.group{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:5px 6px}
+input[type=number]{width:82px;border:1px solid var(--line-strong);background:var(--bg);border-radius:6px;padding:6px 8px;font-family:var(--mono);font-size:14px;font-weight:600;color:var(--ink);text-align:center;-moz-appearance:textfield}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]:focus-visible{outline:2px solid var(--blue);outline-offset:1px;border-color:var(--blue)}
+input[type=number]::placeholder{color:var(--muted);opacity:1;font-weight:400}
+input[type=number]:focus::placeholder{color:transparent}
+input[type=number]:disabled{background:var(--panel2);color:var(--muted);border-color:var(--line);cursor:not-allowed}
+button{font-family:inherit;font-size:13px;color:var(--ink-soft);background:var(--bg);border:1px solid var(--line-strong);border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:0;transition:background .13s ease,color .13s ease,border-color .13s ease,transform .08s ease}
+button:hover:not(:disabled){background:var(--panel2);color:var(--ink)}
+button:active:not(:disabled){transform:translateY(1px)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.ico{width:32px;height:32px;flex:0 0 32px}
+.ico svg{width:16px;height:16px}
+.ico.pri{background:var(--blue);border-color:var(--blue);color:#fff}
+.ico.pri:hover:not(:disabled){background:#2a63bb;border-color:#2a63bb;color:#fff}
+.ico.dan:hover:not(:disabled){background:var(--red-soft);border-color:var(--red);color:var(--red)}
+.chip{height:30px;padding:0 11px;border-radius:6px;font-size:12.5px;font-weight:500;background:transparent;border-color:transparent;color:var(--muted)}
+.chip svg{width:14px;height:14px;opacity:0}
+.chip[aria-pressed=true]{background:var(--bg);border-color:var(--line-strong);color:var(--ink)}
+.chip[aria-pressed=true] svg{opacity:1;color:var(--green)}
+.sel{height:30px;border:1px solid var(--line-strong);background:var(--bg);border-radius:6px;font-family:inherit;font-size:12.5px;color:var(--ink-soft);padding:0 6px}
+.sel:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.lbl{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding-left:4px}
+
+.stage{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg);box-shadow:var(--shadow)}
+.narrate{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--panel);border-bottom:1px solid var(--line);min-height:46px}
+.dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px;background:var(--line-strong)}
+.dot.b{background:var(--blue)}.dot.r{background:var(--red)}.dot.g{background:var(--green)}.dot.a{background:var(--amber)}
+#msg{font-size:13.5px;color:var(--ink);flex:1;min-width:0}
+#msg b{font-family:var(--mono);font-weight:600}
+.canvas{height:clamp(280px,46vh,420px);background:
+  radial-gradient(circle at 1px 1px,#e6e5e1 1px,transparent 0) 0 0/22px 22px,var(--bg)}
+.canvas svg{width:100%;height:100%;display:block}
+.empty{height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px}
+
+.transport{display:flex;align-items:center;gap:8px;padding:9px 12px;border-top:1px solid var(--line);background:var(--panel)}
+.ico.sm{width:28px;height:28px;flex:0 0 28px}
+.ico.sm svg{width:14px;height:14px}
+.track{flex:1;height:4px;border-radius:2px;background:var(--line);overflow:hidden;min-width:40px}
+.track i{display:block;height:100%;background:var(--blue);width:0;transition:width .18s ease}
+.count{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:16px;margin-top:16px}
+section.box{border:1px solid var(--line);border-radius:12px;background:var(--bg);overflow:hidden}
+.box h2{margin:0;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:11px 14px 0}
+.box .body{padding:12px 14px 14px}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:11px}
+.stat{background:var(--bg);padding:10px 14px}
+.stat .k{font-size:11px;color:var(--muted)}
+.stat .v{font-family:var(--mono);font-size:19px;font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+.ops{display:flex;gap:6px;padding:12px 14px 0}
+.op{flex:1;border:1px solid var(--line);border-radius:6px;padding:6px 8px;background:var(--panel)}
+.op .k{font-size:11px;color:var(--amber);font-weight:600}
+.op .v{font-family:var(--mono);font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+
+#props{list-style:none;margin:10px 0 0;padding:0}
+#props li{display:flex;gap:8px;align-items:flex-start;padding:5px 0;font-size:12.5px;color:var(--ink-soft)}
+#props svg{width:15px;height:15px;flex:0 0 15px;margin-top:3px}
+#props li.ok svg{color:var(--green)}
+#props li.no{color:var(--red);font-weight:500}
+#props li.no svg{color:var(--red)}
+
+.travbtns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.tb{height:28px;padding:0 10px;border-radius:6px;font-size:12.5px}
+.seq{font-family:var(--mono);font-size:13px;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:9px 11px;min-height:38px;word-break:break-all;line-height:1.7}
+.seq .on{background:var(--blue);color:#fff;border-radius:3px;padding:1px 4px;margin:0 1px}
+.seq .off{color:var(--muted)}
+
+#log{list-style:none;margin:0;padding:0;max-height:230px;overflow-y:auto}
+#log li{display:flex;gap:9px;padding:6px 0;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-soft)}
+#log li:first-child{border-top:0}
+#log li .dot{margin-top:7px}
+#log li b{font-family:var(--mono);font-weight:600;color:var(--ink)}
+#log .none{color:var(--muted);border:0;padding-top:2px}
+
+.edge{stroke:var(--line-strong);stroke-width:1.6;fill:none}
+.node .body{stroke-width:1.6}
+.node.R .body{fill:var(--node-red);stroke:var(--node-red-line)}
+.node.B .body{fill:var(--node-black);stroke:var(--node-black)}
+.node .val{font-family:var(--mono);font-size:13px;font-weight:600;fill:#fff;text-anchor:middle;dominant-baseline:central}
+.node .bh{font-family:var(--mono);font-size:10px;font-weight:600;fill:var(--muted);text-anchor:start;dominant-baseline:central}
+.node .ring{fill:none;stroke:none;stroke-width:2.4}
+.node.path .ring{stroke:var(--blue);opacity:.55}
+.node.focus .ring{stroke:var(--blue)}
+.node.danger .ring{stroke:var(--red);stroke-width:3}
+.node.ok .ring{stroke:var(--green);stroke-width:3}
+.nil .body{fill:var(--node-black);stroke:var(--node-black)}
+.nil .txt{font-family:var(--mono);font-size:8px;fill:#fff;text-anchor:middle;dominant-baseline:central}
+
+.legend{display:flex;gap:14px;align-items:center;padding:9px 14px;border-top:1px solid var(--line);background:var(--bg);font-size:12px;color:var(--muted);flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:50%;display:inline-block}
+.legend i.r{background:var(--node-red)}
+.legend i.b{background:var(--node-black)}
+.legend i.n{background:var(--node-black);border-radius:2px;width:9px;height:9px}
+
+footer{margin-top:22px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+@media (max-width:820px){.grid{grid-template-columns:minmax(0,1fr)}h1{font-size:24px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<style>
+html{-webkit-text-size-adjust:100%}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>레드-블랙 트리 시뮬레이터</h1>
+  <p class="sub">삽입 후의 <code>빨강-빨강</code> 위반과 삭제 후의 <code>이중 흑색</code>을 어떤 색 변경과 회전으로 해소하는지 단계별로 보여 준다. 매 단계마다 레드-블랙 속성의 만족 여부를 함께 검사한다.</p>
+</header>
+
+<div class="bar">
+  <div class="group">
+    <input type="number" id="val" min="1" max="999" value="55" placeholder="값" aria-label="값 입력">
+    <button class="ico pri" id="bIns" title="삽입 (Enter)" aria-label="삽입">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M8 3.2v9.6M3.2 8h9.6"/></svg>
+    </button>
+    <button class="ico dan" id="bDel" title="삭제" aria-label="삭제">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.8 4.4h10.4M6.2 4.4V2.9h3.6v1.5M4.3 4.4l.6 8.4h6.2l.6-8.4"/></svg>
+    </button>
+    <button class="ico" id="bFind" title="탐색" aria-label="탐색">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="7" cy="7" r="4.2"/><path d="M10.2 10.2l3.1 3.1"/></svg>
+    </button>
+  </div>
+
+  <div class="group">
+    <button class="ico" id="bRand" title="임의의 값 삽입" aria-label="임의의 값 삽입">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="2.6" width="10.8" height="10.8" rx="2.4"/><circle cx="6" cy="6" r=".95" fill="currentColor" stroke="none"/><circle cx="10" cy="10" r=".95" fill="currentColor" stroke="none"/><circle cx="10" cy="6" r=".95" fill="currentColor" stroke="none"/></svg>
+    </button>
+    <button class="ico" id="bSample" title="예시 트리 불러오기" aria-label="예시 트리 불러오기">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="3.4" r="1.7"/><circle cx="3.6" cy="12.4" r="1.7"/><circle cx="12.4" cy="12.4" r="1.7"/><path d="M6.9 4.8L4.7 11M9.1 4.8l2.2 6.2"/></svg>
+    </button>
+    <button class="ico dan" id="bClear" title="전체 지우기" aria-label="전체 지우기">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13.2 7.2A5.3 5.3 0 1 1 11.6 3.6M13.4 2.2v3.3h-3.3"/></svg>
+    </button>
+  </div>
+
+  <div class="group">
+    <span class="lbl">표시</span>
+    <button class="chip" id="tNil" aria-pressed="false">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 8.4l3 3 6.2-7"/></svg>NIL
+    </button>
+    <button class="chip" id="tBh" aria-pressed="false">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 8.4l3 3 6.2-7"/></svg>흑색 높이
+    </button>
+    <select class="sel" id="speed" aria-label="재생 속도">
+      <option value="900">느리게</option>
+      <option value="560" selected>보통</option>
+      <option value="300">빠르게</option>
+    </select>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="narrate"><span class="dot" id="dot"></span><span id="msg">예시 트리를 불러왔다. 값을 입력하고 삽입해 보자.</span></div>
+  <div class="canvas" id="canvas"></div>
+  <div class="transport">
+    <button class="ico sm" id="bPrev" title="이전 단계" aria-label="이전 단계">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 3.2L5.4 8l5.1 4.8M4 3.2v9.6"/></svg>
+    </button>
+    <button class="ico sm" id="bPlay" title="재생 / 일시정지" aria-label="재생 또는 일시정지">
+      <svg id="icPlay" viewBox="0 0 16 16" fill="currentColor"><path d="M4.6 3.1l7.6 4.6a.35.35 0 0 1 0 .6l-7.6 4.6a.35.35 0 0 1-.53-.3V3.4a.35.35 0 0 1 .53-.3z"/></svg>
+      <svg id="icPause" viewBox="0 0 16 16" fill="currentColor" hidden><rect x="4" y="3.2" width="2.9" height="9.6" rx=".7"/><rect x="9.1" y="3.2" width="2.9" height="9.6" rx=".7"/></svg>
+    </button>
+    <button class="ico sm" id="bNext" title="다음 단계" aria-label="다음 단계">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 3.2L10.6 8l-5.1 4.8M12 3.2v9.6"/></svg>
+    </button>
+    <span class="track"><i id="prog"></i></span>
+    <span class="count" id="count">단계 0 / 0</span>
+  </div>
+  <div class="legend">
+    <span><i class="r"></i>빨강 노드</span>
+    <span><i class="b"></i>검정 노드</span>
+    <span><i class="n"></i>NIL (항상 검정)</span>
+  </div>
+</div>
+
+<div class="grid">
+  <section class="box">
+    <h2>트리 상태</h2>
+    <div class="stats">
+      <div class="stat"><div class="k">노드 수</div><div class="v" id="sCnt">0</div></div>
+      <div class="stat"><div class="k">트리 높이</div><div class="v" id="sH">0</div></div>
+      <div class="stat"><div class="k">흑색 높이</div><div class="v" id="sBh">0</div></div>
+    </div>
+    <div class="ops">
+      <div class="op"><div class="k">회전</div><div class="v" id="oRot">0</div></div>
+      <div class="op"><div class="k">색 변경</div><div class="v" id="oCol">0</div></div>
+    </div>
+    <div class="body">
+      <ul id="props"></ul>
+    </div>
+  </section>
+
+  <section class="box">
+    <h2>실행 기록</h2>
+    <div class="body">
+      <div class="travbtns">
+        <button class="tb" data-t="pre">전위 순회</button>
+        <button class="tb" data-t="in">중위 순회</button>
+        <button class="tb" data-t="post">후위 순회</button>
+      </div>
+      <div class="seq" id="seq">중위 순회 결과는 항상 오름차순으로 정렬된다.</div>
+      <ul id="log" style="margin-top:12px"><li class="none">아직 기록이 없다.</li></ul>
+    </div>
+  </section>
+</div>
+
+<footer>레드-블랙 트리는 높이를 <b>2·log(n+1)</b> 이하로 유지한다. AVL만큼 엄격하게 균형을 맞추지는 않지만, 삽입·삭제 한 번에 필요한 회전이 각각 2회와 3회를 넘지 않아 갱신 비용이 작다.</footer>
+</div>
+
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const NS="http://www.w3.org/2000/svg";
+const GAP=60,LV=76,R=19,NR=8;
+const RM=matchMedia("(prefers-reduced-motion:reduce)").matches;
+
+/* ---------------- red-black core ---------------- */
+const NIL={nil:true,c:"B",v:null,id:0};
+NIL.l=NIL.r=NIL.p=NIL;
+let root=NIL,uid=1;
+const isN=n=>n===NIL;
+
+let REC=null;
+function snap(n){return isN(n)?null:{id:n.id,v:n.v,c:n.c,l:snap(n.l),r:snap(n.r)}}
+function push(msg,hi,tone,log,kind){
+  if(!REC)return;
+  REC.push({t:snap(root),hi:hi||{},msg,tone:tone||"",log:!!log,kind:kind||null});
+}
+function rotL(x){
+  const y=x.r;x.r=y.l;if(!isN(y.l))y.l.p=x;y.p=x.p;
+  if(isN(x.p))root=y;else if(x===x.p.l)x.p.l=y;else x.p.r=y;
+  y.l=x;x.p=y;
+}
+function rotR(x){
+  const y=x.l;x.l=y.r;if(!isN(y.r))y.r.p=x;y.p=x.p;
+  if(isN(x.p))root=y;else if(x===x.p.r)x.p.r=y;else x.p.l=y;
+  y.r=x;x.p=y;
+}
+
+function insertFix(z){
+  while(z.p.c==="R"){
+    const g=z.p.p;
+    if(z.p===g.l){
+      const u=g.r;
+      if(u.c==="R"){
+        push(`삼촌 <b>${isN(u)?"NIL":u.v}</b>도 빨강이다. <b>[경우 1]</b> 부모와 삼촌을 검정으로, 조부모 <b>${g.v}</b>을(를) 빨강으로 바꾼다.`,{danger:[z.v,z.p.v],path:[g.v].concat(isN(u)?[]:[u.v])},"a");
+        z.p.c="B";u.c="B";g.c="R";
+        push(`색을 바꾸었다. 조부모 <b>${g.v}</b>에서 위반이 이어질 수 있으므로 그 자리에서 다시 검사한다.`,{focus:[g.v]},"a",true,"color");
+        z=g;
+      }else{
+        if(z===z.p.r){
+          push(`삼촌이 검정이고 <b>${z.v}</b>이(가) 안쪽 자식이다. <b>[경우 2]</b> 부모 <b>${z.p.v}</b> 기준으로 왼쪽 회전해 일자 형태로 만든다.`,{danger:[z.v,z.p.v],path:[g.v]},"a");
+          z=z.p;rotL(z);
+          push(`일자 형태가 되었다. 이어서 경우 3을 적용한다.`,{danger:[z.v,z.p.v],path:[g.v]},"a",true,"rot");
+        }
+        push(`<b>[경우 3]</b> 부모 <b>${z.p.v}</b>을(를) 검정, 조부모 <b>${g.v}</b>을(를) 빨강으로 바꾸고 조부모 기준으로 오른쪽 회전한다.`,{danger:[z.p.v],path:[g.v]},"a");
+        z.p.c="B";g.c="R";rotR(g);
+        push(`회전으로 <b>${z.p.v}</b>이(가) 부분 트리의 뿌리가 되었다. 빨강-빨강 위반이 해소되었다.`,{ok:[z.p.v]},"g",true,"rot");
+      }
+    }else{
+      const u=g.l;
+      if(u.c==="R"){
+        push(`삼촌 <b>${isN(u)?"NIL":u.v}</b>도 빨강이다. <b>[경우 1]</b> 부모와 삼촌을 검정으로, 조부모 <b>${g.v}</b>을(를) 빨강으로 바꾼다.`,{danger:[z.v,z.p.v],path:[g.v].concat(isN(u)?[]:[u.v])},"a");
+        z.p.c="B";u.c="B";g.c="R";
+        push(`색을 바꾸었다. 조부모 <b>${g.v}</b>에서 위반이 이어질 수 있으므로 그 자리에서 다시 검사한다.`,{focus:[g.v]},"a",true,"color");
+        z=g;
+      }else{
+        if(z===z.p.l){
+          push(`삼촌이 검정이고 <b>${z.v}</b>이(가) 안쪽 자식이다. <b>[경우 2]</b> 부모 <b>${z.p.v}</b> 기준으로 오른쪽 회전해 일자 형태로 만든다.`,{danger:[z.v,z.p.v],path:[g.v]},"a");
+          z=z.p;rotR(z);
+          push(`일자 형태가 되었다. 이어서 경우 3을 적용한다.`,{danger:[z.v,z.p.v],path:[g.v]},"a",true,"rot");
+        }
+        push(`<b>[경우 3]</b> 부모 <b>${z.p.v}</b>을(를) 검정, 조부모 <b>${g.v}</b>을(를) 빨강으로 바꾸고 조부모 기준으로 왼쪽 회전한다.`,{danger:[z.p.v],path:[g.v]},"a");
+        z.p.c="B";g.c="R";rotL(g);
+        push(`회전으로 <b>${z.p.v}</b>이(가) 부분 트리의 뿌리가 되었다. 빨강-빨강 위반이 해소되었다.`,{ok:[z.p.v]},"g",true,"rot");
+      }
+    }
+  }
+  if(root.c!=="B"){
+    root.c="B";
+    push(`속성 2에 따라 루트 <b>${root.v}</b>은(는) 항상 검정으로 둔다.`,{focus:[root.v]},"g",true,"color");
+  }
+}
+
+function insert(v){
+  let y=NIL,x=root;
+  const path=[];
+  while(!isN(x)){
+    y=x;path.push(x.v);
+    push(`<b>${v}</b>와(과) <b>${x.v}</b>을(를) 비교한다.`,{path:path.slice(0,-1),focus:[x.v]},"b");
+    if(v===x.v){push(`<b>${v}</b>은(는) 이미 트리에 있다.`,{danger:[x.v]},"r",true);return}
+    x=v<x.v?x.l:x.r;
+  }
+  const z={id:uid++,v,c:"R",l:NIL,r:NIL,p:y};
+  if(isN(y)){root=z;push(`빈 트리이므로 <b>${v}</b>이(가) 루트가 된다. 새 노드는 항상 빨강으로 넣는다.`,{focus:[v]},"g",true)}
+  else{
+    if(v<y.v)y.l=z;else y.r=z;
+    push(`<b>${y.v}</b>의 ${v<y.v?"왼쪽":"오른쪽"} 자식으로 <b>${v}</b>을(를) 빨강으로 삽입한다.`,{path,focus:[v]},"g",true);
+    if(y.c==="R")push(`부모 <b>${y.v}</b>도 빨강이라 속성 4(빨강의 자식은 검정)를 위반한다.`,{danger:[v,y.v]},"r",true);
+  }
+  insertFix(z);
+}
+
+function transplant(u,v){
+  if(isN(u.p))root=v;else if(u===u.p.l)u.p.l=v;else u.p.r=v;
+  v.p=u.p;
+}
+function deleteFix(x){
+  while(x!==root&&x.c==="B"){
+    if(x===x.p.l){
+      let w=x.p.r;
+      if(isN(w))break;
+      if(w.c==="R"){
+        push(`형제 <b>${w.v}</b>이(가) 빨강이다. <b>[경우 1]</b> 형제를 검정, 부모 <b>${x.p.v}</b>을(를) 빨강으로 바꾸고 부모 기준 왼쪽 회전해 형제가 검정인 상황으로 바꾼다.`,{path:[w.v],danger:[x.p.v]},"a");
+        w.c="B";x.p.c="R";rotL(x.p);w=x.p.r;
+        push(`이제 형제 <b>${isN(w)?"NIL":w.v}</b>은(는) 검정이다.`,{focus:isN(w)?[]:[w.v]},"a",true,"rot");
+        if(isN(w))break;
+      }
+      if(w.l.c==="B"&&w.r.c==="B"){
+        push(`형제 <b>${w.v}</b>과(와) 두 조카가 모두 검정이다. <b>[경우 2]</b> 형제를 빨강으로 바꾸고 이중 흑색을 부모 <b>${x.p.v}</b>(으)로 올린다.`,{path:[w.v],danger:[x.p.v]},"a");
+        w.c="R";x=x.p;
+        push(`부모 <b>${x.v}</b>에서 이중 흑색을 이어서 해소한다.`,{focus:[x.v]},"a",true,"color");
+      }else{
+        if(w.r.c==="B"){
+          push(`형제의 바깥쪽 조카가 검정이고 안쪽 조카 <b>${w.l.v}</b>이(가) 빨강이다. <b>[경우 3]</b> 형제 <b>${w.v}</b> 기준 오른쪽 회전으로 경우 4의 형태로 바꾼다.`,{path:[w.v],focus:[w.l.v]},"a");
+          w.l.c="B";w.c="R";rotR(w);w=x.p.r;
+          push(`경우 4의 형태가 되었다.`,{focus:[w.v]},"a",true,"rot");
+        }
+        push(`바깥쪽 조카 <b>${isN(w.r)?"NIL":w.r.v}</b>이(가) 빨강이다. <b>[경우 4]</b> 색을 조정하고 부모 <b>${x.p.v}</b> 기준 왼쪽 회전하면 이중 흑색이 사라진다.`,{path:[w.v],danger:[x.p.v]},"a");
+        w.c=x.p.c;x.p.c="B";w.r.c="B";rotL(x.p);x=root;
+        push(`이중 흑색이 해소되었다.`,{ok:[root.v]},"g",true,"rot");
+      }
+    }else{
+      let w=x.p.l;
+      if(isN(w))break;
+      if(w.c==="R"){
+        push(`형제 <b>${w.v}</b>이(가) 빨강이다. <b>[경우 1]</b> 형제를 검정, 부모 <b>${x.p.v}</b>을(를) 빨강으로 바꾸고 부모 기준 오른쪽 회전해 형제가 검정인 상황으로 바꾼다.`,{path:[w.v],danger:[x.p.v]},"a");
+        w.c="B";x.p.c="R";rotR(x.p);w=x.p.l;
+        push(`이제 형제 <b>${isN(w)?"NIL":w.v}</b>은(는) 검정이다.`,{focus:isN(w)?[]:[w.v]},"a",true,"rot");
+        if(isN(w))break;
+      }
+      if(w.r.c==="B"&&w.l.c==="B"){
+        push(`형제 <b>${w.v}</b>과(와) 두 조카가 모두 검정이다. <b>[경우 2]</b> 형제를 빨강으로 바꾸고 이중 흑색을 부모 <b>${x.p.v}</b>(으)로 올린다.`,{path:[w.v],danger:[x.p.v]},"a");
+        w.c="R";x=x.p;
+        push(`부모 <b>${x.v}</b>에서 이중 흑색을 이어서 해소한다.`,{focus:[x.v]},"a",true,"color");
+      }else{
+        if(w.l.c==="B"){
+          push(`형제의 바깥쪽 조카가 검정이고 안쪽 조카 <b>${w.r.v}</b>이(가) 빨강이다. <b>[경우 3]</b> 형제 <b>${w.v}</b> 기준 왼쪽 회전으로 경우 4의 형태로 바꾼다.`,{path:[w.v],focus:[w.r.v]},"a");
+          w.r.c="B";w.c="R";rotL(w);w=x.p.l;
+          push(`경우 4의 형태가 되었다.`,{focus:[w.v]},"a",true,"rot");
+        }
+        push(`바깥쪽 조카 <b>${isN(w.l)?"NIL":w.l.v}</b>이(가) 빨강이다. <b>[경우 4]</b> 색을 조정하고 부모 <b>${x.p.v}</b> 기준 오른쪽 회전하면 이중 흑색이 사라진다.`,{path:[w.v],danger:[x.p.v]},"a");
+        w.c=x.p.c;x.p.c="B";w.l.c="B";rotR(x.p);x=root;
+        push(`이중 흑색이 해소되었다.`,{ok:[root.v]},"g",true,"rot");
+      }
+    }
+  }
+  if(x.c!=="B"){x.c="B";push(`남은 빨강 노드 <b>${x.v}</b>을(를) 검정으로 칠하면 모든 속성이 회복된다.`,{ok:[x.v]},"g",true,"color")}
+  NIL.c="B";NIL.p=NIL;
+}
+
+function remove(v){
+  let z=root;const path=[];
+  while(!isN(z)&&z.v!==v){
+    path.push(z.v);
+    push(`<b>${v}</b>와(과) <b>${z.v}</b>을(를) 비교한다.`,{path:path.slice(0,-1),focus:[z.v]},"b");
+    z=v<z.v?z.l:z.r;
+  }
+  if(isN(z)){push(`<b>${v}</b>은(는) 트리에 없어 삭제할 수 없다.`,{path},"r",true);return}
+  push(`삭제할 노드 <b>${v}</b>을(를) 찾았다.`,{path,danger:[v]},"r",true);
+  let removedColor,x;
+  if(isN(z.l)||isN(z.r)){
+    x=isN(z.l)?z.r:z.l;
+    removedColor=z.c;
+    transplant(z,x);
+    push(`자식이 ${isN(x)?"없으므로 그대로 제거한다":`하나뿐이므로 <b>${x.v}</b>이(가) 자리를 대신한다`}. 제거된 자리의 색은 <b>${removedColor==="R"?"빨강":"검정"}</b>이었다.`,isN(x)?{}:{focus:[x.v]},"g",true);
+  }else{
+    let s=z.r;while(!isN(s.l))s=s.l;
+    push(`자식이 둘이므로 중위 후속자 <b>${s.v}</b>을(를) 찾는다.`,{danger:[v],focus:[s.v]},"a");
+    removedColor=s.c;x=s.r;
+    z.v=s.v;transplant(s,x);
+    push(`<b>${z.v}</b>의 값을 삭제 위치로 옮기고 후속자 노드를 제거한다. 제거된 자리의 색은 <b>${removedColor==="R"?"빨강":"검정"}</b>이었다.`,{focus:[z.v]},"g",true);
+  }
+  if(removedColor==="R"){
+    push(`제거된 노드가 빨강이었으므로 검정 개수가 그대로다. 고칠 것이 없다.`,{},"g",true);
+    NIL.p=NIL;return;
+  }
+  push(`제거된 노드가 검정이라 그 경로의 검정 개수가 하나 줄었다. <b>이중 흑색</b>을 해소해야 한다.`,isN(x)?{}:{danger:[x.v]},"r",true);
+  deleteFix(x);
+}
+
+function search(v){
+  let x=root;const path=[];
+  while(!isN(x)){
+    push(`<b>${v}</b>와(과) <b>${x.v}</b>을(를) 비교한다.`,{path:path.slice(),focus:[x.v]},"b");
+    if(v===x.v){push(`<b>${v}</b>을(를) 찾았다. 비교 횟수는 <b>${path.length+1}</b>회이다.`,{path,ok:[v]},"g",true);return}
+    path.push(x.v);
+    x=v<x.v?x.l:x.r;
+  }
+  push(`<b>${v}</b>은(는) 트리에 없다. 비교 횟수는 <b>${path.length}</b>회이다.`,{path},"r",true);
+}
+
+/* ---------------- properties ---------------- */
+function analyze(t){
+  let redRed=true,bhOk=true;
+  const bh=(n)=>{
+    if(!n)return 1;
+    if(n.c==="R"&&((n.l&&n.l.c==="R")||(n.r&&n.r.c==="R")))redRed=false;
+    const a=bh(n.l),b=bh(n.r);
+    if(a!==b)bhOk=false;
+    return Math.max(a,b)+(n.c==="B"?1:0);
+  };
+  const h=(n)=>n?1+Math.max(h(n.l),h(n.r)):0;
+  let c=0;(function w(n){if(!n)return;c++;w(n.l);w(n.r)})(t);
+  return{rootBlack:!t||t.c==="B",redRed,bhOk,bh:bh(t),h:h(t),count:c};
+}
+const PROPS=[
+  ["rootBlack","루트는 검정이다"],
+  ["redRed","빨강 노드의 자식은 모두 검정이다"],
+  ["bhOk","모든 경로의 검정 노드 수가 같다"]
+];
+const OKI='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 8.4l3 3 6.2-7"/></svg>';
+const NOI='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>';
+
+/* ---------------- rendering ---------------- */
+const canvas=$("#canvas");
+const pos=new Map();
+let svg=null,nodeEls=[],edgeEls=[],raf=0;
+
+function display(t,showNil){
+  const f=n=>{
+    if(!n)return null;
+    const o={id:"n"+n.id,v:n.v,c:n.c,nil:false};
+    o.l=n.l?f(n.l):(showNil?{id:"x"+n.id+"L",nil:true,c:"B"}:null);
+    o.r=n.r?f(n.r):(showNil?{id:"x"+n.id+"R",nil:true,c:"B"}:null);
+    return o;
+  };
+  return f(t);
+}
+function layout(t){
+  const nodes=[],edges=[];let i=0,md=0;
+  (function walk(n,d){
+    if(!n)return;
+    walk(n.l,d+1);
+    n._x=(i++)*GAP;n._y=d*LV;md=Math.max(md,d);
+    walk(n.r,d+1);
+    nodes.push(n);
+    if(n.l)edges.push([n,n.l]);
+    if(n.r)edges.push([n,n.r]);
+  })(t,0);
+  const cw=Math.max(280,canvas.clientWidth||900),ch=Math.max(200,canvas.clientHeight||340);
+  const padX=54,padY=44;
+  let vw=Math.max((i-1)*GAP+padX*2,cw),vh=Math.max(md*LV+padY*2,ch);
+  const ar=cw/ch;
+  if(vw/vh>ar)vh=vw/ar;else vw=vh*ar;
+  const cx=((i-1)*GAP)/2,cy=(md*LV)/2;
+  return{nodes,edges,vb:`${(cx-vw/2).toFixed(1)} ${(cy-vh/2).toFixed(1)} ${vw.toFixed(1)} ${vh.toFixed(1)}`};
+}
+function bhOf(n){if(!n)return 1;return Math.max(bhOf(n.l),bhOf(n.r))+(n.c==="B"?1:0)}
+
+function draw(t,hi){
+  hi=hi||{};
+  if(!t){canvas.innerHTML='<div class="empty">트리가 비어 있다. 값을 삽입해 보자.</div>';pos.clear();svg=null;nodeEls=[];edgeEls=[];return}
+  const showNil=$("#tNil").getAttribute("aria-pressed")==="true";
+  const showBh=$("#tBh").getAttribute("aria-pressed")==="true";
+  const dt=display(t,showNil);
+  const{nodes,edges,vb}=layout(dt);
+  const cls=new Map();
+  (hi.path||[]).forEach(v=>cls.set(v,"path"));
+  (hi.ok||[]).forEach(v=>cls.set(v,"ok"));
+  (hi.focus||[]).forEach(v=>cls.set(v,"focus"));
+  (hi.danger||[]).forEach(v=>cls.set(v,"danger"));
+
+  canvas.innerHTML="";
+  svg=document.createElementNS(NS,"svg");
+  svg.setAttribute("viewBox",vb);
+  svg.setAttribute("preserveAspectRatio","xMidYMid meet");
+  canvas.appendChild(svg);
+
+  const parent=new Map();
+  edges.forEach(([a,b])=>parent.set(b.id,a));
+  const live=new Set(nodes.map(n=>n.id));
+  [...pos.keys()].forEach(k=>{if(!live.has(k))pos.delete(k)});
+  nodes.forEach(n=>{
+    if(!pos.has(n.id)){
+      const p=parent.get(n.id),src=(p&&pos.get(p.id))||{x:n._x,y:n._y};
+      pos.set(n.id,{x:src.x,y:src.y,s:0});
+    }
+    const q=pos.get(n.id);q.tx=n._x;q.ty=n._y;q.ts=1;
+  });
+
+  edgeEls=edges.map(([a,b])=>{
+    const l=document.createElementNS(NS,"line");
+    l.setAttribute("class","edge");svg.appendChild(l);
+    return{el:l,a:a.id,b:b.id};
+  });
+  nodeEls=nodes.map(n=>{
+    const g=document.createElementNS(NS,"g");
+    if(n.nil){
+      g.setAttribute("class","node nil");
+      const r=document.createElementNS(NS,"rect");
+      r.setAttribute("class","body");
+      r.setAttribute("x",-NR);r.setAttribute("y",-NR);
+      r.setAttribute("width",NR*2);r.setAttribute("height",NR*2);r.setAttribute("rx",2.5);
+      g.appendChild(r);
+    }else{
+      g.setAttribute("class","node "+n.c+(cls.get(n.v)?" "+cls.get(n.v):""));
+      const ring=document.createElementNS(NS,"circle");
+      ring.setAttribute("class","ring");ring.setAttribute("r",R+5);g.appendChild(ring);
+      const c=document.createElementNS(NS,"circle");
+      c.setAttribute("class","body");c.setAttribute("r",R);g.appendChild(c);
+      const tx=document.createElementNS(NS,"text");
+      tx.setAttribute("class","val");tx.setAttribute("y",1);tx.textContent=n.v;g.appendChild(tx);
+      if(showBh){
+        const e=document.createElementNS(NS,"text");
+        e.setAttribute("class","bh");e.setAttribute("x",R+6);e.setAttribute("y",-R+2);
+        e.textContent="b"+bhOf(n);g.appendChild(e);
+      }
+    }
+    svg.appendChild(g);
+    return{el:g,id:n.id};
+  });
+  tick();
+}
+function tick(){
+  cancelAnimationFrame(raf);
+  let moving=false;
+  pos.forEach(p=>{
+    const k=RM?1:0.24;
+    p.x+=(p.tx-p.x)*k;p.y+=(p.ty-p.y)*k;p.s+=((p.ts??1)-p.s)*k;
+    if(Math.abs(p.tx-p.x)>0.4||Math.abs(p.ty-p.y)>0.4||Math.abs(1-p.s)>0.01)moving=true;
+    else{p.x=p.tx;p.y=p.ty;p.s=1}
+  });
+  nodeEls.forEach(o=>{
+    const p=pos.get(o.id);if(!p)return;
+    o.el.setAttribute("transform",`translate(${p.x.toFixed(2)},${p.y.toFixed(2)}) scale(${p.s.toFixed(3)})`);
+  });
+  edgeEls.forEach(o=>{
+    const a=pos.get(o.a),b=pos.get(o.b);if(!a||!b)return;
+    o.el.setAttribute("x1",a.x.toFixed(2));o.el.setAttribute("y1",a.y.toFixed(2));
+    o.el.setAttribute("x2",b.x.toFixed(2));o.el.setAttribute("y2",b.y.toFixed(2));
+    o.el.setAttribute("opacity",b.s.toFixed(2));
+  });
+  if(moving)raf=requestAnimationFrame(tick);
+}
+
+/* ---------------- playback ---------------- */
+let S=[],si=-1,playing=false,timer=null,seqWatch=null;
+const seen=new Set();
+const cnt={rot:0,color:0};
+const delay=()=>+$("#speed").value;
+
+function stats(t){
+  if(t===undefined)t=si>=0&&S[si]?S[si].t:snap(root);
+  const a=analyze(t);
+  $("#sCnt").textContent=a.count;
+  $("#sH").textContent=a.h;
+  $("#sBh").textContent=t?a.bh:0;
+  let rot=cnt.rot,col=cnt.color;
+  for(let i=si+1;i<S.length;i++){if(S[i].kind==="rot")rot--;if(S[i].kind==="color")col--}
+  $("#oRot").textContent=rot;$("#oCol").textContent=col;
+  $("#props").innerHTML=PROPS.map(([k,label])=>{
+    const ok=a[k];
+    return `<li class="${ok?"ok":"no"}">${ok?OKI:NOI}<span>${label}</span></li>`;
+  }).join("");
+}
+function addLog(msg,tone){
+  const ul=$("#log");
+  const none=ul.querySelector(".none");if(none)none.remove();
+  const li=document.createElement("li");
+  li.innerHTML=`<span class="dot ${tone||""}"></span><span>${msg}</span>`;
+  ul.prepend(li);
+  while(ul.children.length>40)ul.lastElementChild.remove();
+}
+let locked=false;
+function setLock(on){
+  if(locked===on)return;
+  locked=on;
+  ["#val","#bIns","#bDel","#bFind","#bRand","#bSample"].forEach(s=>{$(s).disabled=on});
+  document.querySelectorAll(".tb").forEach(b=>{b.disabled=on});
+  if(!on)$("#val").focus({preventScroll:true});
+}
+function sync(){
+  setLock(playing);
+  $("#count").textContent=`단계 ${Math.max(si+1,0)} / ${S.length}`;
+  $("#prog").style.width=S.length?((si+1)/S.length*100)+"%":"0";
+  $("#bPrev").disabled=si<=0;
+  $("#bNext").disabled=si>=S.length-1;
+  $("#bPlay").disabled=S.length===0||si>=S.length-1;
+  $("#icPlay").hidden=playing;$("#icPause").hidden=!playing;
+}
+function go(i){
+  si=i;const s=S[i];if(!s)return;
+  draw(s.t,s.hi);
+  $("#msg").innerHTML=s.msg;
+  $("#dot").className="dot "+(s.tone||"");
+  if(s.log&&!seen.has(s)){seen.add(s);addLog(s.msg,s.tone)}
+  if(seqWatch&&s.seq!==undefined)renderSeq(seqWatch,s.seq);
+  stats();sync();
+}
+function stop(){playing=false;clearTimeout(timer);sync()}
+function schedule(){
+  clearTimeout(timer);
+  timer=setTimeout(()=>{
+    if(!playing)return;
+    if(si<S.length-1){go(si+1);si<S.length-1?schedule():stop()}else stop();
+  },delay());
+}
+function play(){if(si>=S.length-1)return;playing=true;sync();schedule()}
+function run(steps){
+  stop();seen.clear();
+  S=steps;si=-1;
+  if(!S.length){draw(snap(root),{});stats();return}
+  go(0);play();
+}
+
+/* ---------------- operations ---------------- */
+function readVal(){
+  const v=parseInt($("#val").value,10);
+  if(isNaN(v)||v<1||v>999){
+    $("#msg").innerHTML="1 이상 999 이하의 정수를 입력해야 한다.";
+    $("#dot").className="dot r";$("#val").focus();return null;
+  }
+  return v;
+}
+function clearInput(){$("#val").value="";if(!locked)$("#val").focus({preventScroll:true})}
+function record(fn){
+  REC=[];
+  try{fn()}
+  catch(e){REC.push({t:snap(root),hi:{},msg:"실행 중 오류가 발생했다: "+e.message,tone:"r",log:true,kind:null})}
+  const steps=REC;REC=null;seqWatch=null;
+  steps.forEach(s=>{if(s.kind==="rot")cnt.rot++;if(s.kind==="color")cnt.color++});
+  return steps;
+}
+$("#bIns").onclick=()=>{const v=readVal();if(v===null)return;run(record(()=>{if(!isN(root))push(`<b>${v}</b> 삽입을 시작한다. 루트부터 자리를 찾는다.`,{},"b");insert(v)}));clearInput()};
+$("#bDel").onclick=()=>{const v=readVal();if(v===null)return;if(isN(root)){$("#msg").textContent="트리가 비어 있다.";$("#dot").className="dot r";return}run(record(()=>{push(`<b>${v}</b> 삭제를 시작한다.`,{},"b");remove(v)}));clearInput()};
+$("#bFind").onclick=()=>{const v=readVal();if(v===null)return;if(isN(root)){$("#msg").textContent="트리가 비어 있다.";$("#dot").className="dot r";return}run(record(()=>{push(`<b>${v}</b> 탐색을 시작한다.`,{},"b");search(v)}));clearInput()};
+$("#bRand").onclick=()=>{
+  const used=new Set();(function w(n){if(isN(n))return;used.add(n.v);w(n.l);w(n.r)})(root);
+  let v,guard=0;do{v=Math.floor(Math.random()*99)+1;guard++}while(used.has(v)&&guard<400);
+  run(record(()=>{if(!isN(root))push(`임의의 값 <b>${v}</b> 삽입을 시작한다.`,{},"b");insert(v)}));
+};
+$("#bClear").onclick=()=>{
+  stop();root=NIL;S=[];si=-1;pos.clear();cnt.rot=cnt.color=0;seqWatch=null;
+  draw(null,{});stats();sync();
+  $("#msg").textContent="트리를 모두 지웠다.";$("#dot").className="dot";
+  $("#seq").textContent="중위 순회 결과는 항상 오름차순으로 정렬된다.";
+  addLog("트리 초기화","");
+};
+$("#bSample").onclick=()=>{loadSample();$("#msg").textContent="예시 트리를 다시 불러왔다.";$("#dot").className="dot g";addLog("예시 트리 불러오기","g")};
+$("#bPrev").onclick=()=>{stop();if(si>0)go(si-1)};
+$("#bNext").onclick=()=>{stop();if(si<S.length-1)go(si+1)};
+$("#bPlay").onclick=()=>{playing?stop():play()};
+$("#val").addEventListener("keydown",e=>{if(e.key==="Enter")$("#bIns").click()});
+[...document.querySelectorAll(".chip")].forEach(b=>b.onclick=()=>{
+  b.setAttribute("aria-pressed",b.getAttribute("aria-pressed")==="true"?"false":"true");
+  const s=si>=0&&S[si]?S[si]:null;
+  draw(s?s.t:snap(root),s?s.hi:{});
+});
+[...document.querySelectorAll(".tb")].forEach(b=>b.onclick=()=>{
+  if(isN(root)){$("#seq").textContent="트리가 비어 있다.";return}
+  const mode=b.dataset.t,out=[];
+  (function w(n){if(isN(n))return;
+    if(mode==="pre")out.push(n.v);
+    w(n.l);
+    if(mode==="in")out.push(n.v);
+    w(n.r);
+    if(mode==="post")out.push(n.v);
+  })(root);
+  const name={pre:"전위",in:"중위",post:"후위"}[mode];
+  const steps=out.map((v,i)=>({
+    t:snap(root),hi:{path:out.slice(0,i),focus:[v]},
+    msg:`${name} 순회 — <b>${i+1}</b>번째 방문 노드는 <b>${v}</b>이다.`,tone:"b",log:false,kind:null,seq:i
+  }));
+  steps.push({t:snap(root),hi:{ok:out.slice()},msg:`${name} 순회 완료: <b>${out.join(" · ")}</b>`,tone:"g",log:true,kind:null,seq:out.length-1});
+  seqWatch=out;renderSeq(out,-1);run(steps);
+});
+function renderSeq(list,upto){
+  $("#seq").innerHTML=list.map((v,i)=>`<span class="${i<=upto?"on":"off"}">${v}</span>`).join(" ");
+}
+
+/* ---------------- init ---------------- */
+function loadSample(){
+  stop();root=NIL;uid=1;pos.clear();S=[];si=-1;cnt.rot=cnt.color=0;REC=null;seqWatch=null;
+  [50,30,70,20,40,60,80,10,25,65].forEach(v=>insert(v));
+  draw(snap(root),{});stats();sync();
+  $("#seq").textContent="중위 순회 결과는 항상 오름차순으로 정렬된다.";
+}
+loadSample();
+$("#count").textContent="단계 0 / 0";
+let rt=0;
+window.addEventListener("resize",()=>{
+  clearTimeout(rt);
+  rt=setTimeout(()=>{const s=si>=0&&S[si]?S[si]:null;draw(s?s.t:snap(root),s?s.hi:{})},120);
+});
+</script>
+</body>
+</html>
