@@ -1,8 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font:14px system-ui,-apple-system,sans-serif;background:#faf9f7}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
 <title>레드-블랙 트리 시뮬레이터</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -145,18 +151,13 @@ footer{margin-top:22px;padding-top:14px;border-top:1px solid var(--line);color:v
 @media (max-width:820px){.grid{grid-template-columns:minmax(0,1fr)}h1{font-size:24px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
-<style>
-html{-webkit-text-size-adjust:100%}
-body{margin:0}
-img{max-width:100%}
-[hidden]{display:none!important}
-</style>
+
 </head>
 <body>
 <div class="wrap">
 <header>
   <h1>레드-블랙 트리 시뮬레이터</h1>
-  <p class="sub">삽입 후의 <code>빨강-빨강</code> 위반과 삭제 후의 <code>이중 흑색</code>을 어떤 색 변경과 회전으로 해소하는지 단계별로 보여 준다. 매 단계마다 레드-블랙 속성의 만족 여부를 함께 검사한다.</p>
+  <p class="sub">삽입 후의 규칙 ③ 위반과 삭제 후의 규칙 ④ 위반을 어떤 색 변경과 회전으로 해소하는지 단계별로 보여 준다. 매 단계마다 레드-블랙 속성의 만족 여부를 함께 검사한다.</p>
 </header>
 
 <div class="bar">
@@ -191,7 +192,7 @@ img{max-width:100%}
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 8.4l3 3 6.2-7"/></svg>NIL
     </button>
     <button class="chip" id="tBh" aria-pressed="false">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 8.4l3 3 6.2-7"/></svg>흑색 높이
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 8.4l3 3 6.2-7"/></svg>블랙 높이
     </button>
     <select class="sel" id="speed" aria-label="재생 속도">
       <option value="900">느리게</option>
@@ -219,9 +220,9 @@ img{max-width:100%}
     <span class="count" id="count">단계 0 / 0</span>
   </div>
   <div class="legend">
-    <span><i class="r"></i>빨강 노드</span>
-    <span><i class="b"></i>검정 노드</span>
-    <span><i class="n"></i>NIL (항상 검정)</span>
+    <span><i class="r"></i>레드 노드</span>
+    <span><i class="b"></i>블랙 노드</span>
+    <span><i class="n"></i>NIL (항상 블랙)</span>
   </div>
 </div>
 
@@ -231,7 +232,7 @@ img{max-width:100%}
     <div class="stats">
       <div class="stat"><div class="k">노드 수</div><div class="v" id="sCnt">0</div></div>
       <div class="stat"><div class="k">트리 높이</div><div class="v" id="sH">0</div></div>
-      <div class="stat"><div class="k">흑색 높이</div><div class="v" id="sBh">0</div></div>
+      <div class="stat"><div class="k">블랙 높이</div><div class="v" id="sBh">0</div></div>
     </div>
     <div class="ops">
       <div class="op"><div class="k">회전</div><div class="v" id="oRot">0</div></div>
@@ -295,42 +296,42 @@ function insertFix(z){
     if(z.p===g.l){
       const u=g.r;
       if(u.c==="R"){
-        push(`삼촌 <b>${isN(u)?"NIL":u.v}</b>도 빨강이다. <b>[경우 1]</b> 부모와 삼촌을 검정으로, 조부모 <b>${g.v}</b>을(를) 빨강으로 바꾼다.`,{danger:[z.v,z.p.v],path:[g.v].concat(isN(u)?[]:[u.v])},"a");
+        push(`부모의 형제 <b>${isN(u)?"NIL":u.v}</b>도 레드이다. <b>[Case 1]</b> 부모와 삼촌을 블랙으로, 조부모 <b>${g.v}</b>을(를) 레드으로 바꾼다.`,{danger:[z.v,z.p.v],path:[g.v].concat(isN(u)?[]:[u.v])},"a");
         z.p.c="B";u.c="B";g.c="R";
         push(`색을 바꾸었다. 조부모 <b>${g.v}</b>에서 위반이 이어질 수 있으므로 그 자리에서 다시 검사한다.`,{focus:[g.v]},"a",true,"color");
         z=g;
       }else{
         if(z===z.p.r){
-          push(`삼촌이 검정이고 <b>${z.v}</b>이(가) 안쪽 자식이다. <b>[경우 2]</b> 부모 <b>${z.p.v}</b> 기준으로 왼쪽 회전해 일자 형태로 만든다.`,{danger:[z.v,z.p.v],path:[g.v]},"a");
+          push(`부모의 형제가 블랙이고 <b>${z.v}</b>이(가) 안쪽 자식이다. <b>[Case 2-1]</b> 부모 <b>${z.p.v}</b> 기준으로 왼쪽 회전해 일자 형태로 만든다.`,{danger:[z.v,z.p.v],path:[g.v]},"a");
           z=z.p;rotL(z);
-          push(`일자 형태가 되었다. 이어서 경우 3을 적용한다.`,{danger:[z.v,z.p.v],path:[g.v]},"a",true,"rot");
+          push(`일자 형태가 되었다. 이어서 Case 2-2를 적용한다.`,{danger:[z.v,z.p.v],path:[g.v]},"a",true,"rot");
         }
-        push(`<b>[경우 3]</b> 부모 <b>${z.p.v}</b>을(를) 검정, 조부모 <b>${g.v}</b>을(를) 빨강으로 바꾸고 조부모 기준으로 오른쪽 회전한다.`,{danger:[z.p.v],path:[g.v]},"a");
+        push(`<b>[Case 2-2]</b> 부모 <b>${z.p.v}</b>을(를) 블랙, 조부모 <b>${g.v}</b>을(를) 레드으로 바꾸고 조부모 기준으로 오른쪽 회전한다.`,{danger:[z.p.v],path:[g.v]},"a");
         z.p.c="B";g.c="R";rotR(g);
-        push(`회전으로 <b>${z.p.v}</b>이(가) 부분 트리의 뿌리가 되었다. 빨강-빨강 위반이 해소되었다.`,{ok:[z.p.v]},"g",true,"rot");
+        push(`회전으로 <b>${z.p.v}</b>이(가) 부분 트리의 뿌리가 되었다. 레드-레드 위반이 해소되었다.`,{ok:[z.p.v]},"g",true,"rot");
       }
     }else{
       const u=g.l;
       if(u.c==="R"){
-        push(`삼촌 <b>${isN(u)?"NIL":u.v}</b>도 빨강이다. <b>[경우 1]</b> 부모와 삼촌을 검정으로, 조부모 <b>${g.v}</b>을(를) 빨강으로 바꾼다.`,{danger:[z.v,z.p.v],path:[g.v].concat(isN(u)?[]:[u.v])},"a");
+        push(`부모의 형제 <b>${isN(u)?"NIL":u.v}</b>도 레드이다. <b>[Case 1]</b> 부모와 삼촌을 블랙으로, 조부모 <b>${g.v}</b>을(를) 레드으로 바꾼다.`,{danger:[z.v,z.p.v],path:[g.v].concat(isN(u)?[]:[u.v])},"a");
         z.p.c="B";u.c="B";g.c="R";
         push(`색을 바꾸었다. 조부모 <b>${g.v}</b>에서 위반이 이어질 수 있으므로 그 자리에서 다시 검사한다.`,{focus:[g.v]},"a",true,"color");
         z=g;
       }else{
         if(z===z.p.l){
-          push(`삼촌이 검정이고 <b>${z.v}</b>이(가) 안쪽 자식이다. <b>[경우 2]</b> 부모 <b>${z.p.v}</b> 기준으로 오른쪽 회전해 일자 형태로 만든다.`,{danger:[z.v,z.p.v],path:[g.v]},"a");
+          push(`부모의 형제가 블랙이고 <b>${z.v}</b>이(가) 안쪽 자식이다. <b>[Case 2-1]</b> 부모 <b>${z.p.v}</b> 기준으로 오른쪽 회전해 일자 형태로 만든다.`,{danger:[z.v,z.p.v],path:[g.v]},"a");
           z=z.p;rotR(z);
-          push(`일자 형태가 되었다. 이어서 경우 3을 적용한다.`,{danger:[z.v,z.p.v],path:[g.v]},"a",true,"rot");
+          push(`일자 형태가 되었다. 이어서 Case 2-2를 적용한다.`,{danger:[z.v,z.p.v],path:[g.v]},"a",true,"rot");
         }
-        push(`<b>[경우 3]</b> 부모 <b>${z.p.v}</b>을(를) 검정, 조부모 <b>${g.v}</b>을(를) 빨강으로 바꾸고 조부모 기준으로 왼쪽 회전한다.`,{danger:[z.p.v],path:[g.v]},"a");
+        push(`<b>[Case 2-2]</b> 부모 <b>${z.p.v}</b>을(를) 블랙, 조부모 <b>${g.v}</b>을(를) 레드으로 바꾸고 조부모 기준으로 왼쪽 회전한다.`,{danger:[z.p.v],path:[g.v]},"a");
         z.p.c="B";g.c="R";rotL(g);
-        push(`회전으로 <b>${z.p.v}</b>이(가) 부분 트리의 뿌리가 되었다. 빨강-빨강 위반이 해소되었다.`,{ok:[z.p.v]},"g",true,"rot");
+        push(`회전으로 <b>${z.p.v}</b>이(가) 부분 트리의 뿌리가 되었다. 레드-레드 위반이 해소되었다.`,{ok:[z.p.v]},"g",true,"rot");
       }
     }
   }
   if(root.c!=="B"){
     root.c="B";
-    push(`속성 2에 따라 루트 <b>${root.v}</b>은(는) 항상 검정으로 둔다.`,{focus:[root.v]},"g",true,"color");
+    push(`속성 2에 따라 루트 <b>${root.v}</b>은(는) 항상 블랙으로 둔다.`,{focus:[root.v]},"g",true,"color");
   }
 }
 
@@ -344,11 +345,11 @@ function insert(v){
     x=v<x.v?x.l:x.r;
   }
   const z={id:uid++,v,c:"R",l:NIL,r:NIL,p:y};
-  if(isN(y)){root=z;push(`빈 트리이므로 <b>${v}</b>이(가) 루트가 된다. 새 노드는 항상 빨강으로 넣는다.`,{focus:[v]},"g",true)}
+  if(isN(y)){root=z;push(`빈 트리이므로 <b>${v}</b>이(가) 루트가 된다. 새 노드는 항상 레드으로 넣는다.`,{focus:[v]},"g",true)}
   else{
     if(v<y.v)y.l=z;else y.r=z;
-    push(`<b>${y.v}</b>의 ${v<y.v?"왼쪽":"오른쪽"} 자식으로 <b>${v}</b>을(를) 빨강으로 삽입한다.`,{path,focus:[v]},"g",true);
-    if(y.c==="R")push(`부모 <b>${y.v}</b>도 빨강이라 속성 4(빨강의 자식은 검정)를 위반한다.`,{danger:[v,y.v]},"r",true);
+    push(`<b>${y.v}</b>의 ${v<y.v?"왼쪽":"오른쪽"} 자식으로 <b>${v}</b>을(를) 레드으로 삽입한다.`,{path,focus:[v]},"g",true);
+    if(y.c==="R")push(`부모 <b>${y.v}</b>도 레드이라 속성 4(레드의 자식은 블랙)를 위반한다.`,{danger:[v,y.v]},"r",true);
   }
   insertFix(z);
 }
@@ -363,51 +364,65 @@ function deleteFix(x){
       let w=x.p.r;
       if(isN(w))break;
       if(w.c==="R"){
-        push(`형제 <b>${w.v}</b>이(가) 빨강이다. <b>[경우 1]</b> 형제를 검정, 부모 <b>${x.p.v}</b>을(를) 빨강으로 바꾸고 부모 기준 왼쪽 회전해 형제가 검정인 상황으로 바꾼다.`,{path:[w.v],danger:[x.p.v]},"a");
+        push(`형제 <b>${w.v}</b>이(가) 레드이다. <b>[Case 2-4]</b> 부모 <b>${x.p.v}</b> 기준으로 왼쪽 회전하고 형제와 부모의 색을 맞바꾼다.`,{path:[w.v],danger:[x.p.v]},"a");
         w.c="B";x.p.c="R";rotL(x.p);w=x.p.r;
-        push(`이제 형제 <b>${isN(w)?"NIL":w.v}</b>은(는) 검정이다.`,{focus:isN(w)?[]:[w.v]},"a",true,"rot");
+        push(`새 형제 <b>${isN(w)?"NIL":w.v}</b>은(는) 블랙이고 부모가 레드가 되었으므로 Case 1에 해당한다.`,{focus:isN(w)?[]:[w.v]},"a",true,"rot");
         if(isN(w))break;
       }
       if(w.l.c==="B"&&w.r.c==="B"){
-        push(`형제 <b>${w.v}</b>과(와) 두 조카가 모두 검정이다. <b>[경우 2]</b> 형제를 빨강으로 바꾸고 이중 흑색을 부모 <b>${x.p.v}</b>(으)로 올린다.`,{path:[w.v],danger:[x.p.v]},"a");
-        w.c="R";x=x.p;
-        push(`부모 <b>${x.v}</b>에서 이중 흑색을 이어서 해소한다.`,{focus:[x.v]},"a",true,"color");
-      }else{
-        if(w.r.c==="B"){
-          push(`형제의 바깥쪽 조카가 검정이고 안쪽 조카 <b>${w.l.v}</b>이(가) 빨강이다. <b>[경우 3]</b> 형제 <b>${w.v}</b> 기준 오른쪽 회전으로 경우 4의 형태로 바꾼다.`,{path:[w.v],focus:[w.l.v]},"a");
-          w.l.c="B";w.c="R";rotR(w);w=x.p.r;
-          push(`경우 4의 형태가 되었다.`,{focus:[w.v]},"a",true,"rot");
+        if(x.p.c==="R"){
+          push(`형제 <b>${w.v}</b>과(와) 두 조카가 모두 블랙이고 부모가 레드이다. <b>[Case 1-1]</b> 부모 <b>${x.p.v}</b>와(과) 형제의 색상을 맞바꾸면 해결된다.`,{path:[w.v],danger:[x.p.v]},"a");
+          w.c="R";x.p.c="B";x=root;
+          push(`부족했던 블랙이 채워졌다.`,{ok:[root.v]},"g",true,"color");
+        }else{
+          push(`형제 <b>${w.v}</b>과(와) 두 조카가 모두 블랙이고 부모도 블랙이다. <b>[Case 2-1]</b> 형제를 레드로 바꾸고, 부모 <b>${x.p.v}</b>을(를) x로 삼아 다시 시작한다.`,{path:[w.v],danger:[x.p.v]},"a");
+          w.c="R";x=x.p;
+          push(`부족분이 <b>${x.v}</b>(으)로 올라갔다.`,{focus:[x.v]},"a",true,"color");
         }
-        push(`바깥쪽 조카 <b>${isN(w.r)?"NIL":w.r.v}</b>이(가) 빨강이다. <b>[경우 4]</b> 색을 조정하고 부모 <b>${x.p.v}</b> 기준 왼쪽 회전하면 이중 흑색이 사라진다.`,{path:[w.v],danger:[x.p.v]},"a");
+      }else{
+        const P=x.p.c==="R"?"1":"2";
+        if(w.r.c==="B"){
+          push(`형제의 바깥쪽 자식 r이 블랙이고 안쪽 자식 l <b>${w.l.v}</b>이(가) 레드이다. <b>[Case ${P}-3]</b> 형제 <b>${w.v}</b> 기준으로 오른쪽 회전하고 형제와 l의 색을 맞바꾼다.`,{path:[w.v],focus:[w.l.v]},"a");
+          w.l.c="B";w.c="R";rotR(w);w=x.p.r;
+          push(`Case ${P}-2의 형태가 되었다.`,{focus:[w.v]},"a",true,"rot");
+        }
+        push(`형제의 바깥쪽 자식 r <b>${isN(w.r)?"NIL":w.r.v}</b>이(가) 레드이다. <b>[Case ${P}-2]</b> 부모 <b>${x.p.v}</b> 기준으로 왼쪽 회전하고 부모와 형제의 색을 바꾼 뒤, r을 블랙으로 바꾼다.`,{path:[w.v],danger:[x.p.v]},"a");
         w.c=x.p.c;x.p.c="B";w.r.c="B";rotL(x.p);x=root;
-        push(`이중 흑색이 해소되었다.`,{ok:[root.v]},"g",true,"rot");
+        push(`부족했던 블랙이 채워졌다.`,{ok:[root.v]},"g",true,"rot");
       }
     }else{
       let w=x.p.l;
       if(isN(w))break;
       if(w.c==="R"){
-        push(`형제 <b>${w.v}</b>이(가) 빨강이다. <b>[경우 1]</b> 형제를 검정, 부모 <b>${x.p.v}</b>을(를) 빨강으로 바꾸고 부모 기준 오른쪽 회전해 형제가 검정인 상황으로 바꾼다.`,{path:[w.v],danger:[x.p.v]},"a");
+        push(`형제 <b>${w.v}</b>이(가) 레드이다. <b>[Case 2-4]</b> 부모 <b>${x.p.v}</b> 기준으로 오른쪽 회전하고 형제와 부모의 색을 맞바꾼다.`,{path:[w.v],danger:[x.p.v]},"a");
         w.c="B";x.p.c="R";rotR(x.p);w=x.p.l;
-        push(`이제 형제 <b>${isN(w)?"NIL":w.v}</b>은(는) 검정이다.`,{focus:isN(w)?[]:[w.v]},"a",true,"rot");
+        push(`새 형제 <b>${isN(w)?"NIL":w.v}</b>은(는) 블랙이고 부모가 레드가 되었으므로 Case 1에 해당한다.`,{focus:isN(w)?[]:[w.v]},"a",true,"rot");
         if(isN(w))break;
       }
       if(w.r.c==="B"&&w.l.c==="B"){
-        push(`형제 <b>${w.v}</b>과(와) 두 조카가 모두 검정이다. <b>[경우 2]</b> 형제를 빨강으로 바꾸고 이중 흑색을 부모 <b>${x.p.v}</b>(으)로 올린다.`,{path:[w.v],danger:[x.p.v]},"a");
-        w.c="R";x=x.p;
-        push(`부모 <b>${x.v}</b>에서 이중 흑색을 이어서 해소한다.`,{focus:[x.v]},"a",true,"color");
-      }else{
-        if(w.l.c==="B"){
-          push(`형제의 바깥쪽 조카가 검정이고 안쪽 조카 <b>${w.r.v}</b>이(가) 빨강이다. <b>[경우 3]</b> 형제 <b>${w.v}</b> 기준 왼쪽 회전으로 경우 4의 형태로 바꾼다.`,{path:[w.v],focus:[w.r.v]},"a");
-          w.r.c="B";w.c="R";rotL(w);w=x.p.l;
-          push(`경우 4의 형태가 되었다.`,{focus:[w.v]},"a",true,"rot");
+        if(x.p.c==="R"){
+          push(`형제 <b>${w.v}</b>과(와) 두 조카가 모두 블랙이고 부모가 레드이다. <b>[Case 1-1]</b> 부모 <b>${x.p.v}</b>와(과) 형제의 색상을 맞바꾸면 해결된다.`,{path:[w.v],danger:[x.p.v]},"a");
+          w.c="R";x.p.c="B";x=root;
+          push(`부족했던 블랙이 채워졌다.`,{ok:[root.v]},"g",true,"color");
+        }else{
+          push(`형제 <b>${w.v}</b>과(와) 두 조카가 모두 블랙이고 부모도 블랙이다. <b>[Case 2-1]</b> 형제를 레드로 바꾸고, 부모 <b>${x.p.v}</b>을(를) x로 삼아 다시 시작한다.`,{path:[w.v],danger:[x.p.v]},"a");
+          w.c="R";x=x.p;
+          push(`부족분이 <b>${x.v}</b>(으)로 올라갔다.`,{focus:[x.v]},"a",true,"color");
         }
-        push(`바깥쪽 조카 <b>${isN(w.l)?"NIL":w.l.v}</b>이(가) 빨강이다. <b>[경우 4]</b> 색을 조정하고 부모 <b>${x.p.v}</b> 기준 오른쪽 회전하면 이중 흑색이 사라진다.`,{path:[w.v],danger:[x.p.v]},"a");
+      }else{
+        const P=x.p.c==="R"?"1":"2";
+        if(w.l.c==="B"){
+          push(`형제의 바깥쪽 자식 r이 블랙이고 안쪽 자식 l <b>${w.r.v}</b>이(가) 레드이다. <b>[Case ${P}-3]</b> 형제 <b>${w.v}</b> 기준으로 왼쪽 회전하고 형제와 l의 색을 맞바꾼다.`,{path:[w.v],focus:[w.r.v]},"a");
+          w.r.c="B";w.c="R";rotL(w);w=x.p.l;
+          push(`Case ${P}-2의 형태가 되었다.`,{focus:[w.v]},"a",true,"rot");
+        }
+        push(`형제의 바깥쪽 자식 r <b>${isN(w.l)?"NIL":w.l.v}</b>이(가) 레드이다. <b>[Case ${P}-2]</b> 부모 <b>${x.p.v}</b> 기준으로 오른쪽 회전하고 부모와 형제의 색을 바꾼 뒤, r을 블랙으로 바꾼다.`,{path:[w.v],danger:[x.p.v]},"a");
         w.c=x.p.c;x.p.c="B";w.l.c="B";rotR(x.p);x=root;
-        push(`이중 흑색이 해소되었다.`,{ok:[root.v]},"g",true,"rot");
+        push(`부족했던 블랙이 채워졌다.`,{ok:[root.v]},"g",true,"rot");
       }
     }
   }
-  if(x.c!=="B"){x.c="B";push(`남은 빨강 노드 <b>${x.v}</b>을(를) 검정으로 칠하면 모든 속성이 회복된다.`,{ok:[x.v]},"g",true,"color")}
+  if(x.c!=="B"){x.c="B";push(`x <b>${x.v}</b>이(가) 레드이므로 블랙으로 칠하면 규칙 ④가 회복된다.`,{ok:[x.v]},"g",true,"color")}
   NIL.c="B";NIL.p=NIL;
 }
 
@@ -425,19 +440,19 @@ function remove(v){
     x=isN(z.l)?z.r:z.l;
     removedColor=z.c;
     transplant(z,x);
-    push(`자식이 ${isN(x)?"없으므로 그대로 제거한다":`하나뿐이므로 <b>${x.v}</b>이(가) 자리를 대신한다`}. 제거된 자리의 색은 <b>${removedColor==="R"?"빨강":"검정"}</b>이었다.`,isN(x)?{}:{focus:[x.v]},"g",true);
+    push(`자식이 ${isN(x)?"없으므로 그대로 제거한다":`하나뿐이므로 <b>${x.v}</b>이(가) 자리를 대신한다`}. 제거된 자리의 색은 <b>${removedColor==="R"?"레드":"블랙"}</b>이었다.`,isN(x)?{}:{focus:[x.v]},"g",true);
   }else{
     let s=z.r;while(!isN(s.l))s=s.l;
-    push(`자식이 둘이므로 중위 후속자 <b>${s.v}</b>을(를) 찾는다.`,{danger:[v],focus:[s.v]},"a");
+    push(`자식이 둘이므로 오른쪽 후손 중 가장 작은 노드 <b>${s.v}</b>을(를) 찾는다.`,{danger:[v],focus:[s.v]},"a");
     removedColor=s.c;x=s.r;
     z.v=s.v;transplant(s,x);
-    push(`<b>${z.v}</b>의 값을 삭제 위치로 옮기고 후속자 노드를 제거한다. 제거된 자리의 색은 <b>${removedColor==="R"?"빨강":"검정"}</b>이었다.`,{focus:[z.v]},"g",true);
+    push(`<b>${z.v}</b>의 값을 삭제 위치로 옮기고 후속자 노드를 제거한다. 제거된 자리의 색은 <b>${removedColor==="R"?"레드":"블랙"}</b>이었다.`,{focus:[z.v]},"g",true);
   }
   if(removedColor==="R"){
-    push(`제거된 노드가 빨강이었으므로 검정 개수가 그대로다. 고칠 것이 없다.`,{},"g",true);
+    push(`제거된 노드가 레드이므로 블랙 개수가 그대로다. 고칠 것이 없다.`,{},"g",true);
     NIL.p=NIL;return;
   }
-  push(`제거된 노드가 검정이라 그 경로의 검정 개수가 하나 줄었다. <b>이중 흑색</b>을 해소해야 한다.`,isN(x)?{}:{danger:[x.v]},"r",true);
+  push(`제거된 노드가 블랙이므로 그 경로의 블랙 노드 수가 하나 부족해졌다. 규칙 ④를 회복해야 한다.`,isN(x)?{}:{danger:[x.v]},"r",true);
   deleteFix(x);
 }
 
@@ -467,9 +482,9 @@ function analyze(t){
   return{rootBlack:!t||t.c==="B",redRed,bhOk,bh:bh(t),h:h(t),count:c};
 }
 const PROPS=[
-  ["rootBlack","루트는 검정이다"],
-  ["redRed","빨강 노드의 자식은 모두 검정이다"],
-  ["bhOk","모든 경로의 검정 노드 수가 같다"]
+  ["rootBlack","① 루트 노드는 블랙이다"],
+  ["redRed","③ 노드가 레드이면 그 자식은 반드시 블랙이다"],
+  ["bhOk","④ 루트에서 임의의 리프에 이르는 블랙 노드 수는 모두 같다"]
 ];
 const OKI='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3.4 8.4l3 3 6.2-7"/></svg>';
 const NOI='<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>';
@@ -746,5 +761,6 @@ window.addEventListener("resize",()=>{
   rt=setTimeout(()=>{const s=si>=0&&S[si]?S[si]:null;draw(s?s.t:snap(root),s?s.hi:{})},120);
 });
 </script>
+
 </body>
 </html>
