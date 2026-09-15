@@ -208,15 +208,21 @@ footer{margin-top:22px;padding-top:14px;border-top:1px solid var(--line);color:v
   <div class="narrate"><span class="dot" id="dot"></span><span id="msg">예시 트리를 불러왔다. 값을 입력하고 삽입해 보자.</span></div>
   <div class="canvas" id="canvas"></div>
   <div class="transport">
+    <button class="ico sm" id="bFirst" title="맨 처음으로" aria-label="맨 처음으로">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11.7 3.4L7.1 8l4.6 4.6M4.3 3.4v9.2"/></svg>
+    </button>
     <button class="ico sm" id="bPrev" title="이전 단계" aria-label="이전 단계">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 3.2L5.4 8l5.1 4.8M4 3.2v9.6"/></svg>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10.1 3.5L5.6 8l4.5 4.5"/></svg>
     </button>
     <button class="ico sm" id="bPlay" title="재생 / 일시정지" aria-label="재생 또는 일시정지">
       <svg id="icPlay" viewBox="0 0 16 16" fill="currentColor"><path d="M4.6 3.1l7.6 4.6a.35.35 0 0 1 0 .6l-7.6 4.6a.35.35 0 0 1-.53-.3V3.4a.35.35 0 0 1 .53-.3z"/></svg>
       <svg id="icPause" viewBox="0 0 16 16" fill="currentColor" hidden><rect x="4" y="3.2" width="2.9" height="9.6" rx=".7"/><rect x="9.1" y="3.2" width="2.9" height="9.6" rx=".7"/></svg>
     </button>
     <button class="ico sm" id="bNext" title="다음 단계" aria-label="다음 단계">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 3.2L10.6 8l-5.1 4.8M12 3.2v9.6"/></svg>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5.9 3.5L10.4 8l-4.5 4.5"/></svg>
+    </button>
+    <button class="ico sm" id="bLast" title="맨 마지막으로" aria-label="맨 마지막으로">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.3 3.4L8.9 8l-4.6 4.6M11.7 3.4v9.2"/></svg>
     </button>
     <span class="track"><i id="prog"></i></span>
     <span class="count" id="count">단계 0 / 0</span>
@@ -653,8 +659,10 @@ function sync(){
   setLock(playing);
   $("#count").textContent=`단계 ${Math.max(si+1,0)} / ${S.length}`;
   $("#prog").style.width=S.length?((si+1)/S.length*100)+"%":"0";
+  $("#bFirst").disabled=si<=0;
   $("#bPrev").disabled=si<=0;
   $("#bNext").disabled=si>=S.length-1;
+  $("#bLast").disabled=si>=S.length-1;
   $("#bPlay").disabled=S.length===0||si>=S.length-1;
   $("#icPlay").hidden=playing;$("#icPause").hidden=!playing;
 }
@@ -676,11 +684,14 @@ function schedule(){
   },delay());
 }
 function play(){if(si>=S.length-1)return;playing=true;sync();schedule()}
-function run(steps){
+function run(steps,auto){
   stop();seen.clear();
   S=steps;si=-1;
   if(!S.length){draw(snap(root),{});stats();return}
-  go(0);play();
+  if(auto===false){
+    S.forEach(s=>{if(s.log&&!seen.has(s)){seen.add(s);addLog(s.msg,s.tone)}});
+    go(S.length-1);
+  }else{go(0);play()}
 }
 
 /* ---------------- operations ---------------- */
@@ -712,7 +723,7 @@ function record(fn){
 $("#bIns").onclick=()=>{const vs=readVals();if(!vs)return;
   const all=[];
   for(const v of vs)all.push(...record(()=>{if(!isN(root))push(`<b>${v}</b> 삽입을 시작한다. 루트부터 자리를 찾는다.`,{},"b");insert(v)}));
-  run(all);clearInput()};
+  run(all,vs.length===1);clearInput()};
 $("#bDel").onclick=()=>{const vs=readVals();if(!vs)return;
   if(isN(root)){$("#msg").textContent="트리가 비어 있다.";$("#dot").className="dot r";return}
   const all=[];
@@ -720,12 +731,12 @@ $("#bDel").onclick=()=>{const vs=readVals();if(!vs)return;
     if(isN(root)){all.push(...record(()=>push(`트리가 비어 있어 <b>${v}</b>은(는) 삭제할 수 없다.`,{},"r",true)));break}
     all.push(...record(()=>{push(`<b>${v}</b> 삭제를 시작한다.`,{},"b");remove(v)}));
   }
-  run(all);clearInput()};
+  run(all,vs.length===1);clearInput()};
 $("#bFind").onclick=()=>{const vs=readVals();if(!vs)return;
   if(isN(root)){$("#msg").textContent="트리가 비어 있다.";$("#dot").className="dot r";return}
   const all=[];
   for(const v of vs)all.push(...record(()=>{push(`<b>${v}</b> 탐색을 시작한다.`,{},"b");search(v)}));
-  run(all);clearInput()};
+  run(all,vs.length===1);clearInput()};
 $("#bRand").onclick=()=>{
   const used=new Set();(function w(n){if(isN(n))return;used.add(n.v);w(n.l);w(n.r)})(root);
   let v,guard=0;do{v=Math.floor(Math.random()*99)+1;guard++}while(used.has(v)&&guard<400);
@@ -739,8 +750,10 @@ $("#bClear").onclick=()=>{
   addLog("트리 초기화","");
 };
 $("#bSample").onclick=()=>{loadSample();$("#msg").textContent="예시 트리를 다시 불러왔다.";$("#dot").className="dot g";addLog("예시 트리 불러오기","g")};
+$("#bFirst").onclick=()=>{stop();if(S.length)go(0)};
 $("#bPrev").onclick=()=>{stop();if(si>0)go(si-1)};
 $("#bNext").onclick=()=>{stop();if(si<S.length-1)go(si+1)};
+$("#bLast").onclick=()=>{stop();if(!S.length)return;S.forEach(s=>{if(s.log&&!seen.has(s)){seen.add(s);addLog(s.msg,s.tone)}});go(S.length-1)};
 $("#bPlay").onclick=()=>{playing?stop():play()};
 $("#val").addEventListener("keydown",e=>{if(e.key==="Enter")$("#bIns").click()});
 [...document.querySelectorAll(".chip")].forEach(b=>b.onclick=()=>{
