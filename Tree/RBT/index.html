@@ -43,7 +43,7 @@ img{max-width:100%}
 body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:break-word}
 .wrap{max-width:1040px;margin:0 auto;padding-block:32px 56px;padding-left:20px;padding-right:20px}
 
-header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:22px}
+header{margin-bottom:18px}
 h1{font-family:var(--serif);font-size:30px;font-weight:600;letter-spacing:-.01em;margin:0 0 6px;text-wrap:balance;color:var(--ink)}
 .sub{color:var(--muted);font-size:13.5px;margin:0;max-width:64ch}
 .sub code{font-family:var(--mono);font-size:12.5px;background:var(--panel2);padding:1px 5px;border-radius:4px;color:var(--ink-soft)}
@@ -172,16 +172,16 @@ footer{margin-top:22px;padding-top:14px;border-top:1px solid var(--line);color:v
 .exam-tips li strong{display:block;font-size:14px;color:#123d59}
 @media print{.exam-tips{break-inside:auto}.exam-tips> :not(summary){display:block!important}}
 </style>
+<style>.sim-info{background:transparent}.sim-info .grid{margin-top:16px}.sim-info #log li{padding-left:0;font-size:inherit;margin-bottom:0}.sim-info footer{margin-bottom:0}</style>
 </head>
 <body>
 
 <div class="wrap">
 <header>
   <h1>레드-블랙 트리 시뮬레이터</h1>
-  <p class="sub">삽입 후의 규칙 ③ 위반과 삭제 후의 규칙 ④ 위반을 어떤 색 변경과 회전으로 해소하는지 단계별로 보여 준다. 매 단계마다 레드-블랙 속성의 만족 여부를 함께 검사한다.</p>
 </header>
 
-<details class="exam-tips" id="examTips"><summary>TIP · 레드-블랙 트리 시뮬레이션 규칙 <span aria-hidden="true">(펼치기 / 접기)</span></summary><p class="tip-common">키는 중복 저장하지 않으며, 없는 키의 삭제는 트리를 바꾸지 않는다. 여러 키는 입력 순서대로 하나씩 삽입·삭제하고 매번 복구를 마친 뒤 다음 키를 처리한다. 최종 트리는 삽입·삭제와 균형 복구가 모두 완료된 상태이다.</p><ol><li><strong>NIL도 블랙</strong>루트와 모든 NIL은 블랙이다. 레드 노드의 자식은 블랙이며, 각 노드에서 아래쪽 NIL까지 가는 모든 경로의 블랙 수가 같아야 한다. NIL 표시를 꺼도 NIL이 사라지는 것은 아니다. 실제 키가 있는 단말 노드와 NIL 리프를 구분한다.</li><li><strong>삽입 · 삼촌의 색부터</strong>새 노드는 레드로 삽입하고 마지막에 루트를 블랙으로 만든다. 부모가 블랙이면 끝낸다. 부모가 레드이면 삼촌을 검사한다. 삼촌이 레드이면 부모·삼촌을 블랙, 조부모를 레드로 바꾸고 위로 계속한다(Case 1). 삼촌이 블랙(NIL 포함)이면 안쪽 꺾임을 먼저 펴고(Case 2-1), 바깥쪽 일자에서 조부모 회전과 색 변경을 한다(Case 2-2).</li><li><strong>삭제 대체값 · 키만 복사</strong>자식이 둘이면 오른쪽 서브트리의 최솟값인 후속자의 키만 삭제 위치로 복사한다. 삭제 위치의 기존 색은 유지한다. 보정 여부는 처음 요청한 키의 색이 아니라 실제 제거된 후속자의 원래 색으로 결정한다.</li><li><strong>삭제 · 레드 자식은 블랙으로</strong>실제 제거한 노드가 레드이면 보정하지 않는다. 블랙 노드를 레드 자식이 대신하면 그 자식을 블랙으로 칠한다. 블랙(NIL 포함)이 대신하면 블랙 부족을 보정하며, 부족이 루트까지 올라가면 종료한다.</li><li><strong>삭제 동률 · 두 조카가 모두 레드</strong>형제가 블랙이고 바깥쪽 조카가 레드이면 안쪽 조카 색과 관계없이 Case 1-2 또는 2-2를 적용한다. 두 조카가 모두 레드여도 이 경우이다. 안쪽만 레드이고 바깥쪽이 블랙일 때만 Case 1-3 또는 2-3으로 변환한 뒤 *-2를 적용한다.</li><li><strong>좌우 대칭 · 안쪽과 바깥쪽</strong>부족한 자리 x가 왼쪽이면 형제는 오른쪽, 안쪽 조카는 형제의 왼쪽, 바깥쪽 조카는 형제의 오른쪽이다. x가 오른쪽이면 모두 반대이다. 좌우가 반대인 경우에는 회전 방향과 조카의 위치도 함께 뒤집어 적용한다. HTML 로그의 l/r은 각각 안쪽/바깥쪽 역할을 뜻한다.</li><li><strong>삭제 · 케이스 처리 순서</strong>형제가 레드이면 먼저 Case 2-4로 회전·재색칠하여 블랙 형제로 바꾸고 다시 판정한다. 블랙 형제의 두 자식이 모두 블랙이면 부모가 레드일 때 1-1로 끝내고, 부모도 블랙이면 2-1로 부족을 위로 전달한다. 색 변경만으로 끝나는 경우도 있다.</li><li><strong>표시 약속 · 블랙 높이</strong>이 HTML의 블랙 높이 표시는 현재 노드가 블랙이면 그 노드도 포함하고, 끝의 NIL도 1개로 센다. 예: 블랙 루트 하나는 2, 빈 트리는 1이다. 시작 노드를 제외하는 정의와는 숫자가 다를 수 있다. 일반 높이는 실제 노드의 레벨 수(단말 1)이다. 트리를 확인할 때는 키뿐 아니라 색도 함께 확인한다.</li></ol></details>
+
 
 <div class="bar">
   <div class="group">
@@ -235,14 +235,14 @@ footer{margin-top:22px;padding-top:14px;border-top:1px solid var(--line);color:v
     <button class="ico sm" id="bFirst" title="맨 처음으로" aria-label="맨 처음으로">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11.7 3.4L7.1 8l4.6 4.6M4.3 3.4v9.2"/></svg>
     </button>
-    <button class="ico sm" id="bPrev" title="이전 단계" aria-label="이전 단계">
+    <button class="ico sm" id="bPrev" title="이전 단계 (←)" aria-label="이전 단계 (왼쪽 방향키)" aria-keyshortcuts="ArrowLeft">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10.1 3.5L5.6 8l4.5 4.5"/></svg>
     </button>
     <button class="ico sm" id="bPlay" title="재생 / 일시정지" aria-label="재생 또는 일시정지">
       <svg id="icPlay" viewBox="0 0 16 16" fill="currentColor"><path d="M4.6 3.1l7.6 4.6a.35.35 0 0 1 0 .6l-7.6 4.6a.35.35 0 0 1-.53-.3V3.4a.35.35 0 0 1 .53-.3z"/></svg>
       <svg id="icPause" viewBox="0 0 16 16" fill="currentColor" hidden><rect x="4" y="3.2" width="2.9" height="9.6" rx=".7"/><rect x="9.1" y="3.2" width="2.9" height="9.6" rx=".7"/></svg>
     </button>
-    <button class="ico sm" id="bNext" title="다음 단계" aria-label="다음 단계">
+    <button class="ico sm" id="bNext" title="다음 단계 (→)" aria-label="다음 단계 (오른쪽 방향키)" aria-keyshortcuts="ArrowRight">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5.9 3.5L10.4 8l-4.5 4.5"/></svg>
     </button>
     <button class="ico sm" id="bLast" title="맨 마지막으로" aria-label="맨 마지막으로">
@@ -258,6 +258,9 @@ footer{margin-top:22px;padding-top:14px;border-top:1px solid var(--line);color:v
   </div>
 </div>
 
+<details class="exam-tips" id="examTips"><summary>TIP · 레드-블랙 트리 시뮬레이션 규칙 <span aria-hidden="true">(펼치기 / 접기)</span></summary><p class="tip-common">키는 중복 저장하지 않으며, 없는 키의 삭제는 트리를 바꾸지 않는다. 여러 키는 입력 순서대로 하나씩 삽입·삭제하고 매번 복구를 마친 뒤 다음 키를 처리한다. 최종 트리는 삽입·삭제와 균형 복구가 모두 완료된 상태이다.</p><ol><li><strong>NIL도 블랙</strong>루트와 모든 NIL은 블랙이다. 레드 노드의 자식은 블랙이며, 각 노드에서 아래쪽 NIL까지 가는 모든 경로의 블랙 수가 같아야 한다. NIL 표시를 꺼도 NIL이 사라지는 것은 아니다. 실제 키가 있는 단말 노드와 NIL 리프를 구분한다.</li><li><strong>삽입 · 삼촌의 색부터</strong>새 노드는 레드로 삽입하고 마지막에 루트를 블랙으로 만든다. 부모가 블랙이면 끝낸다. 부모가 레드이면 삼촌을 검사한다. 삼촌이 레드이면 부모·삼촌을 블랙, 조부모를 레드로 바꾸고 위로 계속한다(Case 1). 삼촌이 블랙(NIL 포함)이면 안쪽 꺾임을 먼저 펴고(Case 2-1), 바깥쪽 일자에서 조부모 회전과 색 변경을 한다(Case 2-2).</li><li><strong>삭제 대체값 · 키만 복사</strong>자식이 둘이면 오른쪽 서브트리의 최솟값인 후속자의 키만 삭제 위치로 복사한다. 삭제 위치의 기존 색은 유지한다. 보정 여부는 처음 요청한 키의 색이 아니라 실제 제거된 후속자의 원래 색으로 결정한다.</li><li><strong>삭제 · 레드 자식은 블랙으로</strong>실제 제거한 노드가 레드이면 보정하지 않는다. 블랙 노드를 레드 자식이 대신하면 그 자식을 블랙으로 칠한다. 블랙(NIL 포함)이 대신하면 블랙 부족을 보정하며, 부족이 루트까지 올라가면 종료한다.</li><li><strong>삭제 동률 · 두 조카가 모두 레드</strong>형제가 블랙이고 바깥쪽 조카가 레드이면 안쪽 조카 색과 관계없이 Case 1-2 또는 2-2를 적용한다. 두 조카가 모두 레드여도 이 경우이다. 안쪽만 레드이고 바깥쪽이 블랙일 때만 Case 1-3 또는 2-3으로 변환한 뒤 *-2를 적용한다.</li><li><strong>좌우 대칭 · 안쪽과 바깥쪽</strong>부족한 자리 x가 왼쪽이면 형제는 오른쪽, 안쪽 조카는 형제의 왼쪽, 바깥쪽 조카는 형제의 오른쪽이다. x가 오른쪽이면 모두 반대이다. 좌우가 반대인 경우에는 회전 방향과 조카의 위치도 함께 뒤집어 적용한다. HTML 로그의 l/r은 각각 안쪽/바깥쪽 역할을 뜻한다.</li><li><strong>삭제 · 케이스 처리 순서</strong>형제가 레드이면 먼저 Case 2-4로 회전·재색칠하여 블랙 형제로 바꾸고 다시 판정한다. 블랙 형제의 두 자식이 모두 블랙이면 부모가 레드일 때 1-1로 끝내고, 부모도 블랙이면 2-1로 부족을 위로 전달한다. 색 변경만으로 끝나는 경우도 있다.</li><li><strong>표시 약속 · 블랙 높이</strong>이 HTML의 블랙 높이 표시는 현재 노드가 블랙이면 그 노드도 포함하고, 끝의 NIL도 1개로 센다. 예: 블랙 루트 하나는 2, 빈 트리는 1이다. 시작 노드를 제외하는 정의와는 숫자가 다를 수 있다. 일반 높이는 실제 노드의 레벨 수(단말 1)이다. 트리를 확인할 때는 키뿐 아니라 색도 함께 확인한다.</li></ol></details>
+
+<details class="exam-tips sim-info" id="simInfo"><summary>설명 · 트리 상태와 실행 기록 <span aria-hidden="true">(펼치기 / 접기)</span></summary>
 <div class="grid">
   <section class="box">
     <h2>트리 상태</h2>
@@ -290,6 +293,7 @@ footer{margin-top:22px;padding-top:14px;border-top:1px solid var(--line);color:v
 </div>
 
 <footer>레드-블랙 트리는 높이를 <b>2·log(n+1)</b> 이하로 유지한다. AVL만큼 엄격하게 균형을 맞추지는 않지만, 삽입·삭제 한 번에 필요한 회전이 각각 2회와 3회를 넘지 않아 갱신 비용이 작다.</footer>
+</details>
 </div>
 
 <script>
@@ -800,6 +804,24 @@ $("#bNext").onclick=()=>{stop();if(si<S.length-1)go(si+1)};
 $("#bLast").onclick=()=>{stop();if(!S.length)return;S.forEach(s=>{if(s.log&&!seen.has(s)){seen.add(s);addLog(s.msg,s.tone)}});go(S.length-1)};
 $("#bPlay").onclick=()=>{playing?stop():play()};
 $("#val").addEventListener("keydown",e=>{if(e.key==="Enter")$("#bIns").click()});
+
+// Step navigation shortcuts; preserve native editing and modified shortcuts.
+document.addEventListener("keydown",e=>{
+  if(e.defaultPrevented||e.isComposing||e.altKey||e.ctrlKey||e.metaKey||e.shiftKey)return;
+  if(e.key!=="ArrowLeft"&&e.key!=="ArrowRight")return;
+  const t=e.target;
+  if(t&&(t.isContentEditable||t.closest?.("input,textarea,select,[role='textbox']")))return;
+  if(!S.length)return;
+  e.preventDefault();
+  stop();
+  if(e.key==="ArrowLeft"&&si>0)go(si-1);
+  if(e.key==="ArrowRight"&&si<S.length-1)go(si+1);
+  // stop() may focus the value input; keep repeated arrows on the simulator.
+  const stage=$("#canvas");
+  if(!stage.hasAttribute("tabindex"))stage.tabIndex=-1;
+  stage.focus({preventScroll:true});
+});
+
 [...document.querySelectorAll(".chip")].forEach(b=>b.onclick=()=>{
   b.setAttribute("aria-pressed",b.getAttribute("aria-pressed")==="true"?"false":"true");
   if(b.id==="tShape"){
