@@ -8,6 +8,11 @@
 body{margin:0;font:14px system-ui,-apple-system,sans-serif;background:#faf9f7}
 img{max-width:100%}
 [hidden]{display:none!important}
+/* Pending insertions stay above the drawing so they never cover nodes. */
+.insert-queue{padding:10px 16px 6px;display:flex;gap:4px 6px;flex-wrap:wrap;align-items:center;background:var(--bg);font-size:13px;color:var(--muted)}
+.insert-queue[hidden]{display:none}
+.insert-queue .queue-value{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;box-sizing:border-box;border:2px solid transparent;border-radius:50%;font-family:var(--mono);color:var(--ink)}
+.insert-queue .queue-value.current{border-color:var(--blue);color:var(--blue);font-weight:600}
 </style>
 <title>AVL 트리 시뮬레이터</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -216,6 +221,7 @@ footer{margin-top:22px;padding-top:14px;border-top:1px solid var(--line);color:v
 
 <div class="stage">
   <div class="narrate"><span class="dot" id="dot"></span><span id="msg">예시 트리를 불러왔다. 값을 입력하고 삽입해 보자.</span></div>
+  <div id="insertQueue" class="insert-queue" hidden aria-label="삽입 진행 상황"></div>
   <div class="canvas" id="canvas"></div>
   <div class="transport">
     <button class="ico sm" id="bFirst" title="맨 처음으로" aria-label="맨 처음으로">
@@ -524,7 +530,14 @@ function setLock(on){
   document.querySelectorAll(".tb").forEach(b=>{b.disabled=on});
   if(!on)$("#val").focus({preventScroll:true});
 }
+function renderInsertQueue(){
+  const el=$("#insertQueue"),q=S[si]?.insertQueue;
+  el.hidden=!q;
+  if(!q){el.textContent="";return}
+  el.innerHTML=q.values.map((v,i)=>`<span class="queue-value${i===q.index?" current":""}"${i===q.index?' aria-current="step"':''}>${v}</span>`).join("");
+}
 function sync(){
+  renderInsertQueue();
   setLock(playing);
   $("#count").textContent=`단계 ${Math.max(si+1,0)} / ${S.length}`;
   $("#prog").style.width=S.length?((si+1)/S.length*100)+"%":"0";
@@ -593,7 +606,11 @@ function record(fn){
 }
 $("#bIns").onclick=()=>{const vs=readVals();if(!vs)return;
   const all=[];
-  for(const v of vs)all.push(...record(()=>{if(root)push(`<b>${v}</b> 삽입을 시작한다. 루트부터 자리를 찾는다.`,{},"b");insert(v)}));
+  vs.forEach((v,index)=>{
+    const steps=record(()=>{if(root)push(`<b>${v}</b> 삽입을 시작한다. 루트부터 자리를 찾는다.`,{},"b");insert(v)});
+    steps.forEach((s,j)=>{s.insertQueue={values:vs,index,done:j===steps.length-1}});
+    all.push(...steps);
+  });
   run(all,vs.length===1);clearInput()};
 $("#bDel").onclick=()=>{const vs=readVals();if(!vs)return;
   if(!root){$("#msg").textContent="트리가 비어 있다.";$("#dot").className="dot r";return}
