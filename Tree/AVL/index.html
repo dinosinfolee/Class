@@ -79,6 +79,11 @@ button:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
 /* ---------- stage ---------- */
 .stage{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg);box-shadow:var(--shadow)}
 .narrate{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--panel);border-bottom:1px solid var(--line);min-height:46px}
+.fsbtn{margin-left:4px}
+.stage:fullscreen,.stage:-webkit-full-screen{border:0;border-radius:0;box-shadow:none;display:flex;flex-direction:column;background:var(--bg)}
+.stage:fullscreen .canvas,.stage:-webkit-full-screen .canvas{flex:1 1 auto;height:auto;min-height:0}
+.stage:fullscreen .narrate,.stage:-webkit-full-screen .narrate{padding:14px 18px}
+.stage:fullscreen .transport,.stage:-webkit-full-screen .transport{padding:11px 16px}
 .dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px;background:var(--line-strong)}
 .dot.b{background:var(--blue)}.dot.r{background:var(--red)}.dot.g{background:var(--green)}.dot.a{background:var(--amber)}
 #msg{font-size:13.5px;color:var(--ink);flex:1;min-width:0}
@@ -200,7 +205,7 @@ footer{margin-top:22px;padding-top:14px;border-top:1px solid var(--line);color:v
 </div>
 
 <div class="stage">
-  <div class="narrate"><span class="dot" id="dot"></span><span id="msg">예시 트리를 불러왔다. 값을 입력하고 삽입해 보자.</span></div>
+  <div class="narrate"><span class="dot" id="dot"></span><span id="msg">예시 트리를 불러왔다. 값을 입력하고 삽입해 보자.</span><button class="ico sm fsbtn" id="bFull" title="전체 화면 (F)" aria-label="전체 화면으로 보기"><svg id="icFullOn" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2.4H2.4V6M10 2.4h3.6V6M6 13.6H2.4V10M10 13.6h3.6V10"/></svg><svg id="icFullOff" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" hidden><path d="M2.4 6H6V2.4M13.6 6H10V2.4M2.4 10H6v3.6M13.6 10H10v3.6"/></svg></button></div>
   <div class="canvas" id="canvas"></div>
   <div class="transport">
     <button class="ico sm" id="bFirst" title="맨 처음으로" aria-label="맨 처음으로">
@@ -670,6 +675,34 @@ window.addEventListener("resize",()=>{
     draw(s?s.t:snap(root),s?s.hi:{});
   },120);
 });
+
+/* ---------------- fullscreen ---------------- */
+(function(){
+  const stage=document.querySelector(".stage"),btn=$("#bFull");
+  if(!stage||!btn)return;
+  const isOn=()=>(document.fullscreenElement||document.webkitFullscreenElement)===stage;
+  function redraw(){const s=si>=0&&S[si]?S[si]:null;draw(s?s.t:snap(root),s?s.hi:{})}
+  function toggle(){
+    if(isOn()){const x=document.exitFullscreen||document.webkitExitFullscreen;if(x)x.call(document)}
+    else{const r=stage.requestFullscreen||stage.webkitRequestFullscreen;if(r)r.call(stage)}
+  }
+  function syncFs(){
+    const on=isOn();
+    $("#icFullOn").hidden=on;$("#icFullOff").hidden=!on;
+    btn.title=on?"전체 화면 나가기 (Esc)":"전체 화면 (F)";
+    btn.setAttribute("aria-label",btn.title);
+    setTimeout(redraw,90);setTimeout(redraw,340);
+  }
+  btn.onclick=toggle;
+  document.addEventListener("fullscreenchange",syncFs);
+  document.addEventListener("webkitfullscreenchange",syncFs);
+  document.addEventListener("keydown",e=>{
+    if(e.key!=="f"&&e.key!=="F")return;
+    const t=e.target;
+    if(t&&(t.tagName==="INPUT"||t.tagName==="SELECT"||t.tagName==="TEXTAREA"))return;
+    e.preventDefault();toggle();
+  });
+})();
 </script>
 
 </body>
