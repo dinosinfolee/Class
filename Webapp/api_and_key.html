@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>API와 API 키</title>
+<style>
+  :root{
+    --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb;
+    --app:#2563eb; --app-bg:#eff5ff;
+    --api:#d97706; --api-bg:#fffbeb;
+    --svc:#059669; --svc-bg:#ecfdf5;
+    --key:#7c3aed; --key-bg:#f5f3ff;
+    --risk:#dc2626;
+    --mono:ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:#fff}
+  @media (prefers-color-scheme: dark){ html,body{background:#191919} }
+  body{font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;color:var(--ink)}
+  #stage{position:absolute;left:0;top:0;width:760px;height:534px;transform-origin:0 0;background:#fff;border-radius:18px;overflow:hidden}
+  .abs{position:absolute}
+
+  .title{left:14px;top:12px;font-size:20px;font-weight:800;letter-spacing:-.6px}
+  .controls{left:0;right:0;top:492px;display:flex;justify-content:center;gap:8px}
+  .controls button{font:inherit;font-size:14px;font-weight:700;padding:7px 16px;border-radius:7px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+  .controls button:hover:not(:disabled){background:#f3f4f6}
+  .controls button:disabled{opacity:.35;cursor:default}
+  .controls .primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .controls .primary:hover{background:#374151 !important}
+
+  /* 영역 */
+  .zone{top:52px;height:254px;border-radius:12px;padding:7px 10px}
+  .zone h3{font-size:15px;font-weight:800;letter-spacing:-.3px;line-height:1.25}
+  .zone h3 span{font-size:12px;font-weight:700;opacity:.75;margin-left:4px}
+  .zone p{font-size:12px;color:#4b5563;margin-top:1px;white-space:nowrap}
+  #zKey{left:12px;width:236px;background:var(--key-bg)} #zKey h3{color:var(--key)}
+  #zApp{left:254px;width:140px;background:var(--app-bg)} #zApp h3{color:var(--app)}
+  #zApi{left:400px;width:130px;background:var(--api-bg)} #zApi h3{color:var(--api)}
+  #zSvc{left:536px;width:212px;background:var(--svc-bg)} #zSvc h3{color:var(--svc)}
+
+  /* 신용카드 */
+  #card{left:24px;top:98px;width:212px;height:118px;border-radius:11px;background:linear-gradient(135deg,#1e3a8a,#4338ca 60%,#7c3aed);color:#fff;padding:12px 14px;box-shadow:0 4px 12px rgba(30,58,138,.25);transition:box-shadow .3s}
+  .chip{width:30px;height:22px;border-radius:5px;background:linear-gradient(135deg,#fde68a,#d97706)}
+  .brand{position:absolute;right:14px;top:12px;font-size:12px;font-weight:800;letter-spacing:1px;opacity:.85}
+  .fl{font-size:12px;opacity:.75;font-weight:600}
+  .fv{font-family:var(--mono);font-weight:700}
+  .field{border-radius:5px;padding:1px 4px;margin:0 -4px;transition:background .3s}
+  #card.hl .field{background:rgba(255,255,255,.2)}
+  #fNum{display:block;margin-top:10px;font-size:15px;letter-spacing:.5px}
+  .row{display:flex;gap:16px;margin-top:8px;align-items:baseline}
+  .row .fv{font-size:13px;margin-left:4px}
+  .merge{left:24px;top:220px;width:212px;text-align:center;font-size:12px;font-weight:700;color:var(--key)}
+  #keyBox{left:24px;top:240px;width:212px;height:34px;background:#fff;border:1.5px solid #c4b5fd;border-radius:8px;display:flex;align-items:center;gap:7px;padding:0 8px;transition:box-shadow .3s}
+  .pill{font-size:12px;font-weight:800;color:#fff;background:var(--key);border-radius:4px;padding:0 6px;line-height:18px;flex:none}
+  #keyText{font-family:var(--mono);font-size:13px;font-weight:700;color:#4c1d95}
+  #keyText.old{text-decoration:line-through;color:#9ca3af}
+  .note{left:24px;top:280px;width:212px;text-align:center;font-size:12px;color:#4b5563}
+
+  /* 내 웹앱 */
+  .box{background:#fff;border:1px solid #cbd5e1;border-radius:9px;padding:8px;transition:box-shadow .3s,background .3s,opacity .3s}
+  #app{left:264px;top:98px;width:120px;height:104px}
+  .appT{font-size:13px;font-weight:800;color:var(--app)}
+  .inp{margin-top:6px;height:22px;border:1px solid #cbd5e1;border-radius:5px;font-size:12px;padding:0 6px;display:flex;align-items:center}
+  .btnRow{display:flex;align-items:center;gap:6px;margin-top:6px}
+  #trBtn{font-size:12px;font-weight:800;color:#fff;background:var(--app);border-radius:5px;padding:2px 9px;transition:transform .2s}
+  #trBtn.press{transform:scale(.85)}
+  #result{font-size:13px;font-weight:800;color:var(--svc);opacity:0;transition:opacity .4s}
+  #other{left:264px;top:212px;width:120px;height:86px;opacity:.35;border-style:dashed}
+  #other.show{opacity:1}
+  .who{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800}
+  .who i{width:20px;height:20px;border-radius:50%;background:#9ca3af;color:#fff;font-style:normal;font-size:12px;display:flex;align-items:center;justify-content:center}
+  #otherMsg{font-size:12px;color:#4b5563;margin-top:6px;line-height:1.4}
+
+  /* API 창구 */
+  #gate{left:410px;top:98px;width:110px;height:200px;border-color:#fcd34d;line-height:1.3}
+  .gT{font-size:13px;font-weight:800;color:var(--api)}
+  .rule{margin-top:4px}
+  .rule .fl{opacity:1;color:var(--muted);display:block}
+  .rule .v{font-family:var(--mono);font-size:12px;font-weight:700}
+  #check{margin-top:7px;border-radius:6px;background:#f9fafb;border:1px solid var(--line);padding:4px 6px;text-align:center}
+  #check .fl{opacity:1;color:var(--muted);display:block}
+  #checkV{font-size:13px;font-weight:800}
+
+  /* 서비스 */
+  #server{left:546px;top:98px;width:192px;height:104px;border-color:#a7f3d0}
+  #bill{left:546px;top:212px;width:192px;height:86px;border-color:#a7f3d0}
+  .bh{display:flex;align-items:center;gap:6px;height:22px}
+  .ico{width:22px;height:22px;border-radius:6px;background:var(--svc);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex:none}
+  .bh b{font-size:14px;font-weight:800;color:#065f46;white-space:nowrap}
+  #console{margin-top:6px;height:60px;background:#0f172a;border-radius:6px;padding:4px 8px;font-family:var(--mono);font-size:12px;line-height:1.4;color:#cbd5e1;white-space:pre;overflow:hidden}
+  #console .ok{color:#4ade80} #console .go{color:#fbbf24} #console .no{color:#f87171}
+  .billRow{display:flex;justify-content:space-between;align-items:baseline;margin-top:6px;font-size:12px;color:#4b5563}
+  #amount{font-size:19px;font-weight:800;font-family:var(--mono);transition:color .3s}
+  #amount.warn{color:var(--risk)}
+  #billMsg{font-size:12px;font-weight:700;margin-top:3px;min-height:16px}
+
+  /* 강조 */
+  .hl{box-shadow:0 0 0 3px var(--c),0 5px 14px rgba(0,0,0,.12) !important}
+
+  /* 경로 */
+  #lanes{position:absolute;left:0;top:0;pointer-events:none}
+  #lanes path{fill:none;stroke-width:2.5;stroke-dasharray:5 5;opacity:.4;transition:opacity .3s,stroke-width .3s}
+  #lanes path.on{opacity:1;stroke-width:3.5;animation:dash .6s linear infinite}
+  @keyframes dash{to{stroke-dashoffset:-10}}
+  .packet{position:absolute;left:0;top:0;offset-anchor:50% 50%;offset-rotate:0deg;font-size:12px;font-weight:800;color:#fff;padding:3px 8px;border-radius:12px;white-space:nowrap;opacity:0;pointer-events:none;box-shadow:0 3px 8px rgba(0,0,0,.2)}
+  #pReq{background:var(--api);offset-path:path('M 384 132 L 546 132')}
+  #pRes{background:var(--svc);offset-path:path('M 546 176 L 384 176')}
+  #pOther{background:var(--risk);offset-path:path('M 384 255 C 470 255, 470 150, 546 150')}
+  .packet.go{opacity:1;animation:travel 1.6s ease-in-out forwards}
+  @keyframes travel{from{offset-distance:0%}to{offset-distance:100%}}
+
+  /* 하단 설명 */
+  #panel{left:12px;top:314px;width:736px;height:168px;border:1px solid var(--line);border-radius:12px;background:#fff}
+  #stepper{position:absolute;left:10px;top:9px;right:10px;display:flex;gap:4px}
+  .st{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;height:26px;border-radius:13px;cursor:pointer;font-size:12px;font-weight:700;color:#9ca3af;background:#f9fafb;white-space:nowrap}
+  .st .n{width:17px;height:17px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex:none}
+  .st.done{color:#4b5563}
+  .st.done .n{border-color:var(--c);color:var(--c)}
+  .st.cur{color:#fff;background:var(--c)}
+  .st.cur .n{border-color:#fff;color:#fff}
+  #explain{position:absolute;left:14px;top:46px;width:404px}
+  .head{display:flex;align-items:center;gap:8px}
+  #area{font-size:12px;font-weight:800;color:#fff;padding:1px 7px;border-radius:4px;line-height:18px}
+  #stTitle{font-size:18px;font-weight:800;letter-spacing:-.4px}
+  #stDesc{font-size:15px;line-height:1.6;color:#374151;margin-top:6px;word-break:keep-all}
+  #code{position:absolute;left:428px;top:46px;width:296px;height:112px;background:#0f172a;border-radius:8px;padding:7px 11px;font-family:var(--mono);font-size:12px;line-height:1.45;color:#e2e8f0;white-space:pre;overflow:hidden}
+  #code .cm{color:#7dd3a8}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <div class="abs title">API와 API 키는 어떻게 동작할까?</div>
+
+  <!-- 영역 -->
+  <div class="abs zone" id="zKey"><h3>API 키<span>API Key</span></h3><p>신용카드 정보와 같은 역할</p></div>
+  <div class="abs zone" id="zApp"><h3>내 웹앱</h3><p>API를 이용하는 쪽</p></div>
+  <div class="abs zone" id="zApi"><h3>API</h3><p>정해진 요청 창구</p></div>
+  <div class="abs zone" id="zSvc"><h3>AI 서비스<span>회사 서버</span></h3><p>기능을 제공하는 쪽</p></div>
+
+  <!-- 신용카드와 API 키 -->
+  <div class="abs" id="card" data-hl="card" style="--c:var(--key)">
+    <div class="chip"></div>
+    <div class="brand">MY CARD</div>
+    <span class="field fv" id="fNum">1234 5678 9012 3456</span>
+    <div class="row">
+      <span class="field"><span class="fl">유효기간</span><span class="fv">12/29</span></span>
+      <span class="field"><span class="fl">CVC</span><span class="fv">123</span></span>
+    </div>
+  </div>
+  <div class="abs merge">▼ 세 정보를 하나로 합친 문자열</div>
+  <div class="abs" id="keyBox" data-hl="keyBox" style="--c:var(--key)">
+    <span class="pill" id="keyPill">API 키</span><span id="keyText">sk-A7f3x9Q2…Lm8c</span>
+  </div>
+  <div class="abs note">실물 없이 정보만 알면 사용 가능</div>
+
+  <!-- 경로 -->
+  <svg id="lanes" width="760" height="534" viewBox="0 0 760 534">
+    <path data-hl="laneReq" d="M 384 132 L 546 132" stroke="#d97706"/>
+    <path data-hl="laneRes" d="M 546 176 L 384 176" stroke="#059669"/>
+    <path data-hl="laneOther" d="M 384 255 C 470 255, 470 150, 546 150" stroke="#dc2626"/>
+  </svg>
+
+  <!-- 내 웹앱 -->
+  <div class="abs box" id="app" data-hl="app" style="--c:var(--app)">
+    <div class="appT">AI 번역기</div>
+    <div class="inp">안녕하세요</div>
+    <div class="btnRow"><span id="trBtn">번역</span><span id="result">Hello</span></div>
+  </div>
+  <div class="abs box" id="other" data-hl="other" style="--c:var(--risk)">
+    <div class="who"><i>?</i>다른 사람</div>
+    <div id="otherMsg">키를 모르면<br>요청 불가</div>
+  </div>
+
+  <!-- API 창구 -->
+  <div class="abs box" id="gate" data-hl="gate" style="--c:var(--api)">
+    <div class="gT">요청 규칙</div>
+    <div class="rule"><span class="fl">주소</span><span class="v">/v1/translate</span></div>
+    <div class="rule"><span class="fl">방식</span><span class="v">POST</span></div>
+    <div class="rule"><span class="fl">인증</span><span class="v">API 키 필수</span></div>
+    <div id="check"><span class="fl">키 확인</span><span id="checkV">대기</span></div>
+  </div>
+
+  <!-- AI 서비스 -->
+  <div class="abs box" id="server" data-hl="server" style="--c:var(--svc)">
+    <div class="bh"><div class="ico">AI</div><b>AI 서버</b></div>
+    <div id="console"></div>
+  </div>
+  <div class="abs box" id="bill" data-hl="bill" style="--c:var(--svc)">
+    <div class="bh"><div class="ico">₩</div><b>요금 청구</b><span style="margin-left:auto;font-size:12px;color:#4b5563;white-space:nowrap">대상: 키 주인</span></div>
+    <div class="billRow"><span>사용 요금</span><span id="amount">₩0</span></div>
+    <div id="billMsg"></div>
+  </div>
+
+  <div class="packet" id="pReq">요청 + API 키</div>
+  <div class="packet" id="pRes">결과: Hello</div>
+  <div class="packet" id="pOther">요청 + 내 API 키</div>
+
+  <!-- 하단 설명 -->
+  <div class="abs" id="panel">
+    <div id="stepper"></div>
+    <div id="explain">
+      <div class="head"><span id="area"></span><span id="stTitle"></span></div>
+      <div id="stDesc"></div>
+    </div>
+    <div id="code"></div>
+  </div>
+
+  <div class="abs controls">
+    <button id="bReset">↺ 초기화</button>
+    <button id="bPrev">◀ 이전</button>
+    <button id="bNext">다음 ▶</button>
+    <button id="bPlay" class="primary">▶ 자동 재생</button>
+  </div>
+</div>
+
+<script>
+const AREA = {
+  intro:{name:'안내',     color:'#1f2937'},
+  app:  {name:'내 웹앱',  color:'#2563eb'},
+  api:  {name:'API',      color:'#d97706'},
+  svc:  {name:'AI 서비스', color:'#059669'},
+  risk: {name:'보안',     color:'#dc2626'}
+};
+
+const steps = [
+  { area:'intro', title:'API와 API 키',
+    desc:'API는 프로그램끼리 기능을 요청하고 제공하는 정해진 창구입니다. API 키는 그 창구를 이용하는 사람을 확인하는 비밀 정보입니다.',
+    code:'// API 요청 = 규칙에 맞춘 주문서\nPOST /v1/translate\nAuthorization: Bearer sk-A7f3…\n{ "text": "안녕하세요" }', hl:[] },
+  { area:'app', title:'요청 작성',
+    desc:'사용자가 [번역] 버튼을 누르면 웹앱이 API 규칙에 맞춰 요청을 작성하고, 요청에 API 키를 첨부합니다.',
+    code:"// API 키를 첨부하여 요청 작성\nfetch(API_URL, {\n  method: 'POST',\n  headers: { Authorization: KEY },\n  body: '{\"text\":\"안녕하세요\"}' });", hl:['app','keyBox'] },
+  { area:'api', title:'요청 전송',
+    desc:'요청이 인터넷을 통해 AI 서비스의 API 창구로 전달됩니다. 정해진 주소와 형식을 지키지 않으면 처리되지 않습니다.',
+    code:'// 실제로 전송되는 HTTP 요청\nPOST /v1/translate HTTP/1.1\nHost: api.ai-service.com\nAuthorization: Bearer sk-A7f3…', hl:['laneReq','gate'], packet:'pReq' },
+  { area:'api', title:'키 확인',
+    desc:'서비스는 API 키로 요청한 사람과 사용 권한을 확인합니다. 카드 결제 시 카드 번호, 유효기간, CVC를 확인하는 것과 같습니다.',
+    code:'// 서비스 회사 서버 (예시)\nconst owner = findOwner(key);\nif (!owner) return 401; // 거부\n// 유효한 키 → 요청 처리', hl:['gate','keyBox','card'] },
+  { area:'svc', title:'실행·응답',
+    desc:'AI 서비스가 번역 기능을 실행하고 결과를 반환합니다. 웹앱은 결과를 받아 화면에 표시합니다.',
+    code:'// 서버가 반환하는 응답\nHTTP/1.1 200 OK\n\n{ "result": "Hello" }', hl:['server','laneRes','app'], packet:'pRes' },
+  { area:'svc', title:'요금 청구',
+    desc:'사용량만큼 요금이 API 키 주인의 계정에 청구됩니다. 카드 결제 대금이 카드 주인에게 청구되는 것과 같습니다.',
+    code:'// 키 주인의 계정에 사용량 기록\nusage.add(owner, {\n  requests: 1,\n  cost: 50   // ₩50\n});', hl:['bill','card'] },
+  { area:'risk', title:'키 유출',
+    desc:'다른 사람이 API 키를 알아내면 내 계정으로 요청할 수 있으며 요금은 나에게 청구됩니다. 카드 정보만으로 결제되는 것과 같습니다.',
+    code:'// 다른 사람의 요청 (같은 키 사용)\nAuthorization: Bearer sk-A7f3…\n// 키가 유효하므로 그대로 처리됨\n// 요금은 키 주인에게 청구됨', hl:['other','laneOther','gate','bill'], packet:'pOther' },
+  { area:'risk', title:'안전한 관리',
+    desc:'API 키는 코드나 화면에 노출하지 않고 서버에 보관합니다. 유출이 의심되면 카드 분실 신고처럼 즉시 폐기하고 새 키를 발급받습니다.',
+    code:'// 키는 코드에 직접 입력하지 않음\nconst KEY = process.env.API_KEY;\n// 유출 시: 기존 키 폐기\n// → 새 키 발급 후 교체', hl:['keyBox','card','other'] }
+];
+const LAST = steps.length - 1;
+
+const consoleText = [
+  '<span class="go">●</span> 요청 대기 중…',
+  '<span class="go">●</span> 요청 대기 중…',
+  '<span class="go">●</span> 요청 대기 중…',
+  '<span class="go">→</span> 요청 수신\n<span class="ok">✓</span> 키 확인: 나',
+  '<span class="ok">✓</span> 키 확인: 나\n<span class="go">→</span> 번역 실행\n<span class="go">→</span> 결과 반환',
+  '<span class="ok">✓</span> 처리 완료\n<span class="go">→</span> 사용량 기록: 1회',
+  '<span class="go">→</span> 요청 수신 (출처 불명)\n<span class="ok">✓</span> 키 확인: 나\n<span class="go">→</span> 요청 처리',
+  '<span class="no">✗</span> 폐기된 키 요청\n<span class="no">✗</span> 처리 거부 (401)'
+];
+const checkText = ['대기','대기','대기','✓ 유효한 키','✓ 유효한 키','✓ 유효한 키','✓ 유효한 키','✗ 폐기된 키'];
+const checkColor = ['#6b7280','#6b7280','#6b7280','#059669','#059669','#059669','#d97706','#dc2626'];
+
+const $ = id => document.getElementById(id);
+let cur = 0, timer = null;
+
+steps.slice(1).forEach((s, i) => {
+  const el = document.createElement('div');
+  el.className = 'st';
+  el.style.setProperty('--c', AREA[s.area].color);
+  el.innerHTML = `<span class="n">${i+1}</span>${s.title}`;
+  el.onclick = () => { stop(); go(i+1); };
+  $('stepper').appendChild(el);
+});
+
+function renderCode(text){
+  const box = $('code'); box.innerHTML = '';
+  text.split('\n').forEach((line, i) => {
+    if (i) box.appendChild(document.createTextNode('\n'));
+    const idx = line.indexOf('//');
+    if (idx < 0) { box.appendChild(document.createTextNode(line)); return; }
+    box.appendChild(document.createTextNode(line.slice(0, idx)));
+    const sp = document.createElement('span'); sp.className = 'cm'; sp.textContent = line.slice(idx);
+    box.appendChild(sp);
+  });
+}
+
+function go(n){
+  cur = Math.max(0, Math.min(LAST, n));
+  const s = steps[cur], a = AREA[s.area];
+
+  document.querySelectorAll('.st').forEach((el, i) => {
+    el.classList.toggle('cur', i+1 === cur);
+    el.classList.toggle('done', i+1 < cur);
+  });
+  $('area').textContent = cur ? `${cur}단계 · ${a.name}` : a.name;
+  $('area').style.background = a.color;
+  $('stTitle').textContent = s.title;
+  $('stDesc').textContent = s.desc;
+  renderCode(s.code);
+
+  document.querySelectorAll('[data-hl]').forEach(el => {
+    el.classList.toggle(el.tagName === 'path' ? 'on' : 'hl', s.hl.includes(el.dataset.hl));
+  });
+
+  /* 내 웹앱 */
+  $('trBtn').classList.toggle('press', cur === 1);
+  $('result').style.opacity = cur >= 4 ? 1 : 0;
+
+  /* 다른 사람 */
+  $('other').classList.toggle('show', cur >= 6);
+  $('otherMsg').innerHTML = cur < 6 ? '키를 모르면<br>요청 불가'
+    : cur === 6 ? '알아낸 내 키로<br>요청 전송' : '<b style="color:#dc2626">✗ 요청 거부</b><br>폐기된 키';
+
+  /* 키 상태 */
+  const kt = $('keyText');
+  kt.textContent = cur === 7 ? 'sk-N4b8w1Kz…Wq1z' : 'sk-A7f3x9Q2…Lm8c';
+  $('keyPill').textContent = cur === 7 ? '새 키' : 'API 키';
+
+  /* 창구·서버 */
+  $('checkV').textContent = checkText[cur];
+  $('checkV').style.color = checkColor[cur];
+  $('console').innerHTML = consoleText[cur];
+
+  /* 요금 */
+  const amt = $('amount');
+  amt.textContent = cur < 5 ? '₩0' : cur === 5 ? '₩50' : '₩38,550';
+  amt.classList.toggle('warn', cur >= 6);
+  $('billMsg').innerHTML = cur === 6 ? '<span style="color:#dc2626">⚠ 모르는 사용 내역 발생</span>'
+    : cur === 7 ? '<span style="color:#059669">✓ 새 키로 교체 완료</span>' : '';
+
+  ['pReq','pRes','pOther'].forEach(id => {
+    const p = $(id); p.classList.remove('go');
+    if (s.packet === id) { void p.offsetWidth; p.classList.add('go'); }
+  });
+
+  $('bPrev').disabled = cur === 0;
+  $('bNext').disabled = cur === LAST;
+}
+
+function play(){
+  if (cur === LAST) go(0);
+  $('bPlay').textContent = '❚❚ 일시 정지';
+  go(cur + 1);
+  timer = setInterval(() => { if (cur < LAST) go(cur + 1); if (cur === LAST) stop(); }, 3000);
+}
+function stop(){
+  clearInterval(timer); timer = null;
+  $('bPlay').textContent = '▶ 자동 재생';
+}
+$('bPlay').onclick = () => timer ? stop() : play();
+$('bNext').onclick = () => { stop(); go(cur + 1); };
+$('bPrev').onclick = () => { stop(); go(cur - 1); };
+$('bReset').onclick = () => { stop(); go(0); };
+
+function fit(){
+  const k = Math.min(innerWidth / 760, innerHeight / 534);
+  const st = $('stage');
+  st.style.transform = `scale(${k})`;
+  st.style.left = (innerWidth - 760 * k) / 2 + 'px';
+  st.style.top = (innerHeight - 534 * k) / 2 + 'px';
+}
+addEventListener('resize', fit);
+fit();
+go(0);
+</script>
+</body>
+</html>
