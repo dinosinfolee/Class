@@ -11,132 +11,118 @@
     --be:#059669; --be-bg:#ecfdf5;
     --net:#d97706; --net-bg:#fffbeb;
     --res:#7c3aed;
+    --mono:ui-monospace,Menlo,Consolas,monospace;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{width:100%;height:100%;overflow:hidden;background:#fff}
   body{font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;color:var(--ink)}
-  #wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
-  #stage{position:absolute;left:0;top:0;width:1100px;height:712px;transform-origin:0 0;background:#fff}
+  #stage{position:absolute;left:0;top:0;width:760px;height:534px;transform-origin:0 0;background:#fff}
   .abs{position:absolute}
 
   /* 머리글 */
-  .title{left:28px;top:20px;font-size:24px;font-weight:800;letter-spacing:-.5px}
-  .title small{font-size:14px;font-weight:500;color:var(--muted);margin-left:10px;letter-spacing:0}
-  .controls{right:20px;top:20px;display:flex;gap:6px}
-  .controls button{font:inherit;font-size:13px;font-weight:600;padding:7px 12px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+  .title{left:14px;top:12px;font-size:20px;font-weight:800;letter-spacing:-.6px}
+  .controls{left:0;right:0;top:492px;display:flex;justify-content:center;gap:8px}
+  .controls button{font:inherit;font-size:14px;font-weight:700;padding:7px 16px;border-radius:7px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
   .controls button:hover:not(:disabled){background:#f3f4f6}
   .controls button:disabled{opacity:.35;cursor:default}
   .controls .primary{background:var(--ink);color:#fff;border-color:var(--ink)}
   .controls .primary:hover{background:#374151 !important}
 
   /* 영역 */
-  .zone{top:74px;height:370px;border-radius:14px;padding:10px 14px}
-  .zone h3{font-size:16px;font-weight:800;letter-spacing:-.3px}
-  .zone h3 span{font-size:12px;font-weight:600;opacity:.75;margin-left:4px}
-  .zone p{font-size:12.5px;color:var(--muted);margin-top:1px}
-  #feZone{left:20px;width:500px;background:var(--fe-bg)} #feZone h3{color:var(--fe)}
-  #netZone{left:530px;width:150px;background:var(--net-bg);text-align:center;padding:10px 8px} #netZone h3{color:var(--net)}
-  #beZone{left:690px;width:390px;background:var(--be-bg)} #beZone h3{color:var(--be)}
-  .legend{margin-top:10px;font-size:11.5px;font-weight:600;display:flex;flex-direction:column;gap:4px;align-items:center}
-  .legend i{display:inline-block;width:22px;height:0;border-top:2.5px dashed;vertical-align:middle;margin-right:5px}
+  .zone{top:52px;height:254px;border-radius:12px;padding:7px 10px}
+  .zone h3{font-size:15px;font-weight:800;letter-spacing:-.3px;line-height:1.25}
+  .zone h3 span{font-size:12px;font-weight:700;opacity:.75;margin-left:4px}
+  .zone p{font-size:12px;color:#4b5563;margin-top:1px}
+  #feZone{left:12px;width:340px;background:var(--fe-bg)} #feZone h3{color:var(--fe)}
+  #netZone{left:358px;width:84px;background:var(--net-bg);text-align:center;padding:7px 4px} #netZone h3{color:var(--net)}
+  #beZone{left:448px;width:300px;background:var(--be-bg)} #beZone h3{color:var(--be)}
 
   /* 브라우저 창 */
-  #frame{left:34px;top:130px;width:472px;height:310px;background:#fff;border:1px solid #cbd5e1;border-radius:10px;overflow:hidden;box-shadow:0 4px 14px rgba(15,23,42,.08)}
-  .tabs{height:26px;background:#e8ecf2;display:flex;align-items:flex-end;padding:0 8px;gap:6px}
-  .dots{display:flex;gap:5px;align-self:center;margin-right:6px}
-  .dots i{width:9px;height:9px;border-radius:50%;display:block}
-  .tab{background:#fff;font-size:11.5px;padding:4px 14px;border-radius:7px 7px 0 0;color:#374151}
-  .toolbar{height:32px;display:flex;align-items:center;gap:8px;padding:0 10px;border-bottom:1px solid var(--line);position:relative}
-  .nav{font-size:13px;color:#64748b;letter-spacing:4px}
-  .url{flex:1;height:22px;border-radius:11px;background:#f1f5f9;font-size:11.5px;color:#475569;display:flex;align-items:center;padding:0 10px}
-  .url b{color:#16a34a;margin-right:5px;font-weight:700}
-  .tag{position:absolute;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:5px;background:var(--ink);color:#fff;white-space:nowrap}
-  .viewport{height:140px;position:relative;padding:14px 14px;display:flex;gap:14px;transition:box-shadow .3s,background .3s}
-  .photo{width:110px;height:110px;border-radius:8px;background:linear-gradient(135deg,#93c5fd,#c4b5fd 55%,#fbcfe8);display:flex;align-items:flex-end;justify-content:flex-end;padding:6px;font-size:10px;color:#fff;font-weight:700;flex:none}
-  .post{display:flex;flex-direction:column;gap:7px;padding-top:2px}
-  .who{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700}
-  .who i{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#fbbf24,#f472b6);display:block}
-  .who em{font-style:normal;font-weight:500;color:var(--muted);font-size:11.5px}
+  #frame{left:22px;top:98px;width:320px;height:200px;background:#fff;border:1px solid #cbd5e1;border-radius:9px;overflow:hidden;box-shadow:0 3px 10px rgba(15,23,42,.08)}
+  .tabs{height:20px;background:#e8ecf2;display:flex;align-items:flex-end;padding:0 6px;gap:5px;position:relative}
+  .dots{display:flex;gap:4px;align-self:center;margin-right:3px}
+  .dots i{width:7px;height:7px;border-radius:50%;display:block}
+  .tab{background:#fff;font-size:12px;line-height:16px;padding:0 10px;border-radius:6px 6px 0 0;color:#374151}
+  .toolbar{height:26px;display:flex;align-items:center;gap:6px;padding:0 7px;border-bottom:1px solid var(--line)}
+  .nav{font-size:12px;color:#64748b;letter-spacing:2px}
+  .url{flex:1;height:19px;border-radius:10px;background:#f1f5f9;font-size:12px;color:#475569;display:flex;align-items:center;padding:0 8px}
+  .tag{position:absolute;font-size:12px;font-weight:700;line-height:16px;padding:0 6px;border-radius:4px;color:#fff;white-space:nowrap}
+  .viewport{height:86px;position:relative;padding:12px 10px;display:flex;gap:10px;transition:box-shadow .3s,background .3s}
+  .photo{width:62px;height:62px;border-radius:7px;background:linear-gradient(135deg,#93c5fd,#c4b5fd 55%,#fbcfe8);flex:none}
+  .post{display:flex;flex-direction:column;gap:3px}
+  .who{display:flex;align-items:center;gap:5px;font-size:13px;font-weight:700}
+  .who i{width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#fbbf24,#f472b6);display:block}
   .caption{font-size:13px;color:#374151}
-  .likeRow{display:flex;align-items:center;gap:8px;margin-top:4px}
-  #likeBtn{width:36px;height:36px;border-radius:50%;border:1.5px solid #d1d5db;background:#fff;font-size:20px;line-height:1;color:#6b7280;cursor:pointer;transition:transform .2s,color .2s,border-color .2s,background .2s;font-family:inherit}
+  .likeRow{display:flex;align-items:center;gap:7px;margin-top:1px}
+  #likeBtn{width:30px;height:30px;border-radius:50%;border:1.5px solid #d1d5db;background:#fff;font-size:17px;line-height:1;color:#6b7280;cursor:pointer;transition:transform .2s,color .2s,border-color .2s,background .2s;font-family:inherit}
   #likeBtn:hover{border-color:#f43f5e}
+  #likeBtn.idle{animation:ring 1.6s ease-out infinite}
+  @keyframes ring{0%{box-shadow:0 0 0 0 rgba(244,63,94,.45)}100%{box-shadow:0 0 0 9px rgba(244,63,94,0)}}
   #likeBtn.on{color:#e11d48;border-color:#fecdd3;background:#fff1f2}
   #likeBtn.press{transform:scale(.82)}
   #likeBtn.pop{animation:pop .45s ease}
   @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.3)}100%{transform:scale(1)}}
-  #likeCount{font-size:13.5px;font-weight:700}
-  .hint{font-size:11px;color:var(--fe);font-weight:600}
+  #likeCount{font-size:14px;font-weight:800}
 
-  .engines{height:112px;border-top:1.5px dashed #94a3b8;background:#f8fafc;position:relative}
-  .engines .lab{position:absolute;left:12px;top:6px;font-size:11.5px;font-weight:700;color:#475569}
-  .eng{position:absolute;top:26px;width:145px;height:78px;background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:8px 9px;transition:box-shadow .3s,background .3s,border-color .3s}
-  .eng b{display:block;font-size:13px;font-weight:800;color:var(--fe)}
-  .eng span{display:block;font-size:11.5px;color:#4b5563;margin-top:4px;line-height:1.4}
+  .engines{height:68px;border-top:1.5px dashed #94a3b8;background:#f8fafc;position:relative}
+  .engines .lab{position:absolute;left:8px;top:3px;font-size:12px;font-weight:700;color:#475569}
+  .eng{position:absolute;top:20px;width:98px;height:42px;background:#fff;border:1px solid #cbd5e1;border-radius:7px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:12.5px;font-weight:800;line-height:1.2;color:var(--fe);transition:box-shadow .3s,background .3s,border-color .3s}
 
   /* 서버·DB */
-  .box{left:706px;width:358px;background:#fff;border:1px solid #a7f3d0;border-radius:10px;padding:10px 12px;transition:box-shadow .3s,background .3s}
-  #server{top:130px;height:146px}
-  #db{top:290px;height:150px}
-  .boxHead{display:flex;align-items:center;gap:9px}
-  .ico{width:30px;height:30px;border-radius:7px;background:var(--be);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex:none}
-  .boxHead b{font-size:14px;font-weight:800;color:#065f46;display:block}
-  .boxHead span{font-size:11.5px;color:var(--muted)}
-  #console{margin-top:9px;height:78px;background:#0f172a;border-radius:7px;padding:8px 10px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;line-height:1.55;color:#cbd5e1;white-space:pre}
+  .box{left:458px;width:280px;background:#fff;border:1px solid #a7f3d0;border-radius:9px;padding:8px;transition:box-shadow .3s,background .3s}
+  #server{top:98px;height:104px}
+  #db{top:208px;height:90px}
+  .boxHead{display:flex;align-items:center;gap:7px;height:24px}
+  .ico{width:24px;height:24px;border-radius:6px;background:var(--be);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex:none}
+  .boxHead b{font-size:14px;font-weight:800;color:#065f46}
+  .boxHead span{font-size:12px;color:var(--muted);margin-left:2px}
+  #console{margin-top:6px;height:58px;background:#0f172a;border-radius:6px;padding:4px 8px;font-family:var(--mono);font-size:12px;line-height:1.4;color:#cbd5e1;white-space:pre;overflow:hidden}
   #console .ok{color:#4ade80} #console .go{color:#fbbf24}
-  table{margin-top:9px;width:100%;border-collapse:collapse;font-size:12px}
-  th,td{border:1px solid #d1fae5;padding:5px 8px;text-align:left}
+  table{margin-top:6px;width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{border:1px solid #d1fae5;padding:2px 7px;text-align:left;height:21px}
   th{background:#f0fdf4;color:#065f46;font-weight:700}
-  td.num{font-weight:800;font-family:ui-monospace,Menlo,Consolas,monospace;transition:background .4s}
-  tr.target td{background:#fff}
+  td.num{font-weight:800;font-family:var(--mono);transition:background .4s}
   td.flash{background:#fef08a}
-  .dim td{color:#9ca3af}
 
   /* 강조 */
-  .hl{box-shadow:0 0 0 3px var(--c),0 6px 18px rgba(0,0,0,.12) !important}
+  .hl{box-shadow:0 0 0 3px var(--c),0 5px 14px rgba(0,0,0,.12) !important}
   .viewport.hl{box-shadow:inset 0 0 0 3px var(--c) !important;background:#f8fbff}
-  .eng.hl{background:#eff6ff;border-color:var(--fe)}
+  .eng.hl{background:#eff6ff;border-color:var(--c)}
   .box.hl{background:#f6fffb}
 
   /* 통신 경로 */
   #lanes{position:absolute;left:0;top:0;pointer-events:none}
-  #lanes path{fill:none;stroke-width:2.5;stroke-dasharray:6 6;opacity:.45;transition:opacity .3s,stroke-width .3s}
-  #lanes path.on{opacity:1;stroke-width:3.5;animation:dash .6s linear infinite}
-  @keyframes dash{to{stroke-dashoffset:-12}}
-  .packet{position:absolute;left:0;top:0;offset-anchor:50% 50%;offset-rotate:0deg;font-size:11.5px;font-weight:800;color:#fff;padding:5px 10px;border-radius:14px;white-space:nowrap;opacity:0;pointer-events:none;box-shadow:0 4px 10px rgba(0,0,0,.18)}
-  #pReq{background:var(--net);offset-path:path('M 497 382 C 600 382, 600 190, 706 190')}
-  #pRes{background:var(--res);offset-path:path('M 706 236 C 620 236, 610 412, 497 412')}
+  #lanes path.lane{fill:none;stroke-width:2.5;stroke-dasharray:5 5;opacity:.45;transition:opacity .3s,stroke-width .3s}
+  #lanes path.lane.on{opacity:1;stroke-width:3.5;animation:dash .6s linear infinite}
+  @keyframes dash{to{stroke-dashoffset:-10}}
+  .packet{position:absolute;left:0;top:0;offset-anchor:50% 50%;offset-rotate:0deg;font-size:12px;font-weight:800;color:#fff;padding:3px 8px;border-radius:12px;white-space:nowrap;opacity:0;pointer-events:none;box-shadow:0 3px 8px rgba(0,0,0,.2)}
+  #pReq{background:var(--net);offset-path:path('M 332 262 C 400 262, 400 140, 458 140')}
+  #pRes{background:var(--res);offset-path:path('M 458 172 C 410 172, 400 282, 332 282')}
   .packet.go{opacity:1;animation:travel 1.5s ease-in-out forwards}
   @keyframes travel{from{offset-distance:0%}to{offset-distance:100%}}
 
   /* 하단 설명 */
-  #panel{left:20px;top:456px;width:1060px;height:238px;border:1px solid var(--line);border-radius:14px;background:#fff}
-  #stepper{position:absolute;left:16px;top:14px;width:210px;display:flex;flex-direction:column;gap:2px}
-  .st{display:flex;align-items:center;gap:9px;height:28px;padding:0 8px;border-radius:7px;cursor:pointer;font-size:13.5px;color:#9ca3af;font-weight:600}
-  .st:hover{background:#f9fafb}
-  .st .n{width:20px;height:20px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex:none}
-  .st .a{margin-left:auto;font-size:10.5px;font-weight:700}
+  #panel{left:12px;top:314px;width:736px;height:168px;border:1px solid var(--line);border-radius:12px;background:#fff}
+  #stepper{position:absolute;left:10px;top:9px;right:10px;display:flex;gap:4px}
+  .st{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;height:26px;border-radius:13px;cursor:pointer;font-size:12px;font-weight:700;color:#9ca3af;background:#f9fafb;white-space:nowrap}
+  .st .n{width:17px;height:17px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex:none}
   .st.done{color:#4b5563}
-  .st.done .n{background:#e5e7eb;border-color:#e5e7eb;color:#4b5563}
-  .st.cur{color:var(--ink);background:#f3f4f6}
-  .st.cur .n{background:var(--c);border-color:var(--c);color:#fff}
-  .st.cur .a, .st.done .a{color:var(--c)}
-  #explain{position:absolute;left:244px;top:16px;width:380px}
-  #area{display:inline-block;font-size:11.5px;font-weight:800;color:#fff;padding:3px 9px;border-radius:5px}
-  #stTitle{font-size:20px;font-weight:800;margin-top:8px;letter-spacing:-.4px}
-  #stDesc{font-size:14.5px;line-height:1.65;color:#374151;margin-top:6px;word-break:keep-all}
-  #codeBox{position:absolute;left:640px;top:14px;width:404px;height:208px;background:#0f172a;border-radius:10px;padding:10px 14px;overflow:hidden}
-  #codeBox .cap{font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:6px}
-  #code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.6;color:#e2e8f0;white-space:pre}
+  .st.done .n{border-color:var(--c);color:var(--c)}
+  .st.cur{color:#fff;background:var(--c)}
+  .st.cur .n{border-color:#fff;color:#fff}
+  #explain{position:absolute;left:14px;top:46px;width:404px}
+  .head{display:flex;align-items:center;gap:8px}
+  #area{font-size:12px;font-weight:800;color:#fff;padding:1px 7px;border-radius:4px;line-height:18px}
+  #stTitle{font-size:18px;font-weight:800;letter-spacing:-.4px}
+  #stDesc{font-size:15px;line-height:1.6;color:#374151;margin-top:6px;word-break:keep-all}
+  #code{position:absolute;left:428px;top:46px;width:296px;height:112px;background:#0f172a;border-radius:8px;padding:8px 11px;font-family:var(--mono);font-size:12px;line-height:1.5;color:#e2e8f0;white-space:pre;overflow:hidden}
   #code .cm{color:#7dd3a8}
-  .vsep{position:absolute;top:16px;width:1px;height:206px;background:var(--line)}
 </style>
 </head>
 <body>
-<div id="wrap">
 <div id="stage">
 
-  <div class="abs title">좋아요 버튼을 누르면 무슨 일이 일어날까?<small>웹 브라우저 구조와 프론트엔드·백엔드</small></div>
+  <div class="abs title">좋아요 버튼을 누르면 무슨 일이 일어날까?</div>
   <div class="abs controls">
     <button id="bReset">↺ 초기화</button>
     <button id="bPrev">◀ 이전</button>
@@ -147,15 +133,11 @@
   <!-- 영역 -->
   <div class="abs zone" id="feZone">
     <h3>프론트엔드<span>Front-end</span></h3>
-    <p>사용자가 보고 조작하는 부분 · 사용자 기기의 웹 브라우저에서 실행</p>
+    <p>사용자가 보고 조작하는 부분 · 브라우저에서 실행</p>
   </div>
   <div class="abs zone" id="netZone">
     <h3>인터넷</h3>
-    <p>요청·응답 전달 경로</p>
-    <div class="legend">
-      <div style="color:var(--net)"><i></i>요청 Request</div>
-      <div style="color:var(--res)"><i></i>응답 Response</div>
-    </div>
+    <p>통신 경로</p>
   </div>
   <div class="abs zone" id="beZone">
     <h3>백엔드<span>Back-end</span></h3>
@@ -163,132 +145,129 @@
   </div>
 
   <!-- 통신 경로 -->
-  <svg id="lanes" width="1100" height="712" viewBox="0 0 1100 712">
+  <svg id="lanes" width="760" height="492" viewBox="0 0 760 492">
     <defs>
-      <marker id="mReq" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#d97706" style="stroke:none;opacity:1;animation:none"/></marker>
-      <marker id="mRes" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7c3aed" style="stroke:none;opacity:1;animation:none"/></marker>
+      <marker id="mReq" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#d97706"/></marker>
+      <marker id="mRes" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/></marker>
     </defs>
-    <path id="laneReq" data-hl="laneReq" d="M 497 382 C 600 382, 600 190, 706 190" stroke="#d97706" marker-end="url(#mReq)"/>
-    <path id="laneRes" data-hl="laneRes" d="M 706 236 C 620 236, 610 412, 497 412" stroke="#7c3aed" marker-end="url(#mRes)"/>
+    <path class="lane" data-hl="laneReq" d="M 332 262 C 400 262, 400 140, 458 140" stroke="#d97706" marker-end="url(#mReq)"/>
+    <path class="lane" data-hl="laneRes" d="M 458 172 C 410 172, 400 282, 332 282" stroke="#7c3aed" marker-end="url(#mRes)"/>
   </svg>
 
   <!-- 웹 브라우저 -->
   <div class="abs" id="frame">
     <div class="tabs">
       <div class="dots"><i style="background:#f87171"></i><i style="background:#fbbf24"></i><i style="background:#4ade80"></i></div>
-      <div class="tab">SNS · 게시물</div>
+      <div class="tab">SNS 게시물</div>
+      <span class="tag" style="right:6px;top:2px;background:#475569">사용자 인터페이스</span>
     </div>
     <div class="toolbar">
       <span class="nav">←→↻</span>
-      <div class="url"><b>🔒</b>https://sns.example.com/post/42</div>
-      <span class="tag" style="right:10px;top:-22px;background:#475569">사용자 인터페이스 (주소창·탭·이동 버튼)</span>
+      <div class="url">sns.example.com/post/42</div>
     </div>
-    <div class="viewport" id="viewport" data-hl="viewport" style="--c:var(--fe)">
-      <div class="photo">사진</div>
+    <div class="viewport" data-hl="viewport" style="--c:var(--fe)">
+      <div class="photo"></div>
       <div class="post">
-        <div class="who"><i></i>sejong_ai <em>· 방금 전</em></div>
+        <div class="who"><i></i>sejong_ai</div>
         <div class="caption">오늘 첫 웹앱 완성!</div>
         <div class="likeRow">
           <button id="likeBtn" aria-label="좋아요">♡</button>
           <span id="likeCount">좋아요 127개</span>
         </div>
-        <div class="hint" id="hint">♡ 버튼을 클릭해 보세요</div>
       </div>
-      <span class="tag" style="right:10px;top:8px;background:var(--fe)">웹 페이지 표시 영역</span>
+      <span class="tag" style="right:6px;top:6px;background:var(--fe)">웹 페이지 표시 영역</span>
     </div>
     <div class="engines">
-      <div class="lab">브라우저 내부 (화면에 보이지 않는 부분)</div>
-      <div class="eng" id="renderEngine" data-hl="renderEngine" style="left:12px;--c:var(--fe)"><b>렌더링 엔진</b><span>HTML·CSS를 해석하여 화면에 표시</span></div>
-      <div class="eng" id="jsEngine" data-hl="jsEngine" style="left:165px;--c:var(--fe)"><b>JavaScript 엔진</b><span>코드를 실행하고 클릭 등 이벤트를 처리</span></div>
-      <div class="eng" id="netModule" data-hl="netModule" style="left:318px;--c:var(--net)"><b style="color:var(--net)">네트워크 모듈</b><span>서버와 데이터를 송수신</span></div>
+      <div class="lab">브라우저 내부 (보이지 않는 부분)</div>
+      <div class="eng" data-hl="renderEngine" style="left:8px;--c:var(--fe)">렌더링<br>엔진</div>
+      <div class="eng" data-hl="jsEngine" style="left:110px;--c:var(--fe)">JavaScript<br>엔진</div>
+      <div class="eng" data-hl="netModule" style="left:212px;--c:var(--net);color:var(--net)">네트워크<br>모듈</div>
     </div>
   </div>
 
   <!-- 서버 -->
   <div class="abs box" id="server" data-hl="server" style="--c:var(--be)">
-    <div class="boxHead"><div class="ico">S</div><div><b>웹 서버 (API 서버)</b><span>요청을 수신하여 규칙에 따라 처리</span></div></div>
+    <div class="boxHead"><div class="ico">S</div><b>웹 서버</b><span>요청 처리</span></div>
     <div id="console"></div>
   </div>
   <div class="abs box" id="db" data-hl="db" style="--c:var(--be)">
-    <div class="boxHead"><div class="ico">DB</div><div><b>데이터베이스</b><span>게시물·사용자·좋아요 정보를 영구 저장</span></div></div>
+    <div class="boxHead"><div class="ico">DB</div><b>데이터베이스</b><span>영구 저장</span></div>
     <table>
-      <tr><th>게시물 번호</th><th>작성자</th><th>좋아요 수</th></tr>
-      <tr class="dim"><td>41</td><td>math_lab</td><td class="num">53</td></tr>
-      <tr class="target"><td><b>42</b></td><td><b>sejong_ai</b></td><td class="num" id="dbVal">127</td></tr>
+      <tr><th>게시물</th><th>작성자</th><th>좋아요 수</th></tr>
+      <tr><td><b>42</b></td><td><b>sejong_ai</b></td><td class="num" id="dbVal">127</td></tr>
     </table>
   </div>
 
-  <div class="packet" id="pReq">POST /like</div>
-  <div class="packet" id="pRes">200 OK · 128</div>
+  <div class="packet" id="pReq">요청</div>
+  <div class="packet" id="pRes">응답 128</div>
 
   <!-- 하단 설명 -->
   <div class="abs" id="panel">
     <div id="stepper"></div>
-    <div class="vsep" style="left:234px"></div>
     <div id="explain">
-      <span id="area"></span>
-      <div id="stTitle"></div>
+      <div class="head"><span id="area"></span><span id="stTitle"></span></div>
       <div id="stDesc"></div>
     </div>
-    <div id="codeBox"><div class="cap" id="codeCap"></div><div id="code"></div></div>
+    <div id="code"></div>
   </div>
 
-</div>
 </div>
 
 <script>
 const AREA = {
-  fe:  {name:'프론트엔드', color:'#2563eb'},
-  net: {name:'네트워크',   color:'#d97706'},
-  be:  {name:'백엔드',     color:'#059669'},
-  intro:{name:'안내',      color:'#1f2937'}
+  fe:   {name:'프론트엔드', color:'#2563eb'},
+  net:  {name:'네트워크',   color:'#d97706'},
+  be:   {name:'백엔드',     color:'#059669'},
+  intro:{name:'안내',       color:'#1f2937'}
 };
 
 const steps = [
   { area:'intro', title:'좋아요 버튼의 동작 과정',
-    desc:'화면 속 ♡ 버튼을 클릭하거나 [다음] 버튼을 눌러 단계별 과정을 확인합니다. 클릭 한 번이 프론트엔드와 백엔드를 거쳐 다시 화면에 반영되기까지 7단계를 거칩니다.',
-    cap:'웹 페이지의 좋아요 버튼 (HTML)',
-    code:'<!-- 화면에 표시되는 버튼과 숫자 -->\n<button id="like">♡</button>\n<span id="count">127</span>', hl:[] },
+    desc:'화면 속 ♡ 버튼을 클릭하거나 [다음]을 눌러 시작합니다. 클릭 한 번이 다시 화면에 반영되기까지 7단계를 거칩니다.',
+    code:'<!-- 좋아요 버튼 (HTML) -->\n<button id="like">♡</button>\n<span id="count">127</span>', hl:[] },
   { area:'fe', title:'클릭 입력',
-    desc:'사용자가 웹 페이지의 ♡ 버튼을 클릭합니다. 브라우저는 클릭 위치에 있는 HTML 요소(button)를 찾아 클릭 이벤트를 발생시킵니다.',
-    cap:'클릭 대상 요소 (HTML)',
-    code:'<!-- 사용자가 클릭한 요소 -->\n<button id="like">♡</button>\n<span id="count">127</span>', hl:['viewport'] },
+    desc:'사용자가 ♡ 버튼을 클릭합니다. 브라우저는 클릭한 위치의 HTML 요소를 찾아 클릭 이벤트를 발생시킵니다.',
+    code:'<!-- 클릭한 요소 (HTML) -->\n<button id="like">♡</button>\n<span id="count">127</span>', hl:['viewport'] },
   { area:'fe', title:'이벤트 처리',
-    desc:'JavaScript 엔진이 버튼에 연결된 코드를 실행합니다. 이 코드는 "42번 게시물에 좋아요를 추가해 달라"는 요청을 작성합니다.',
-    cap:'클릭 시 실행되는 코드 (JavaScript)',
-    code:"// 버튼에 클릭 이벤트 연결\nconst like = document.getElementById('like');\nlike.addEventListener('click', () => {\n  sendLike(42);  // 42번 게시물 좋아요 요청\n});", hl:['jsEngine'] },
+    desc:'JavaScript 엔진이 버튼에 연결된 코드를 실행하여 "42번 게시물에 좋아요 추가" 요청을 작성합니다.',
+    code:"// 클릭 시 실행 (JavaScript)\nlike.onclick = () => {\n  sendLike(42);\n};", hl:['jsEngine'] },
   { area:'net', title:'요청 전송',
-    desc:'네트워크 모듈이 요청을 HTTP 형식에 맞춰 인터넷을 통해 서버로 전송합니다. 요청에는 주소(/api/posts/42/like)와 방식(POST)이 담깁니다.',
-    cap:'서버로 보내는 요청 (HTTP)',
-    code:"// 서버에 요청 전송\nfetch('/api/posts/42/like', { method: 'POST' });\n\n// 실제로 전송되는 HTTP 요청\nPOST /api/posts/42/like HTTP/1.1\nHost: sns.example.com", hl:['netModule','laneReq'], packet:'pReq' },
+    desc:'네트워크 모듈이 요청을 HTTP 형식으로 작성하여 인터넷을 통해 서버에 전송합니다.',
+    code:"// 요청 전송 (JavaScript)\nfetch('/api/posts/42/like',\n      { method: 'POST' });\n// 실제 HTTP 요청\nPOST /api/posts/42/like", hl:['netModule','laneReq'], packet:'pReq' },
   { area:'be', title:'요청 검증',
-    desc:'서버가 요청을 수신하고 규칙에 따라 검증합니다. 로그인한 사용자인지, 이미 좋아요를 눌렀는지 확인합니다. 이 과정은 사용자에게 보이지 않습니다.',
-    cap:'서버에서 실행되는 코드 (Node.js 예시)',
-    code:"// 요청 주소별 처리 규칙\napp.post('/api/posts/:id/like', (req, res) => {\n  if (!req.user) return res.status(401).end();\n  if (liked(req.user, 42)) return res.end();\n  addLike(req.user, 42);  // 좋아요 추가\n});", hl:['server'] },
+    desc:'서버가 요청을 수신하고, 로그인한 사용자인지와 중복 요청인지 검증합니다. 이 과정은 화면에 보이지 않습니다.',
+    code:"// 서버 코드 (Node.js 예시)\napp.post('/api/posts/:id/like',\n  (req, res) => {\n    if (!req.user) return;\n    addLike(req.user, 42);\n  });", hl:['server'] },
   { area:'be', title:'데이터 저장',
-    desc:'서버가 데이터베이스에 저장된 좋아요 수를 127에서 128로 갱신합니다. 저장된 값은 브라우저를 닫아도 유지되며, 다른 사용자에게도 동일하게 표시됩니다.',
-    cap:'데이터베이스 명령 (SQL)',
-    code:"-- 42번 게시물의 좋아요 수 1 증가\nUPDATE posts\nSET    likes = likes + 1\nWHERE  id = 42;   -- 127 → 128", hl:['db'] },
+    desc:'서버가 데이터베이스의 좋아요 수를 127에서 128로 갱신합니다. 저장된 값은 브라우저를 닫아도 유지됩니다.',
+    code:"-- 데이터베이스 명령 (SQL)\nUPDATE posts\nSET likes = likes + 1\nWHERE id = 42;  -- 127→128", hl:['db'] },
   { area:'net', title:'응답 전송',
-    desc:'서버가 처리 결과와 최신 좋아요 수를 JSON 형식으로 작성하여 브라우저에 반환합니다. 상태 코드 200은 요청이 정상 처리되었음을 의미합니다.',
-    cap:'브라우저로 보내는 응답 (HTTP)',
-    code:'// 서버가 반환하는 HTTP 응답\nHTTP/1.1 200 OK\nContent-Type: application/json\n\n{ "liked": true, "likes": 128 }', hl:['server','laneRes','netModule'], packet:'pRes' },
+    desc:'서버가 처리 결과와 최신 좋아요 수를 JSON 형식으로 브라우저에 반환합니다. 200은 정상 처리를 의미합니다.',
+    code:'// 서버의 HTTP 응답\nHTTP/1.1 200 OK\n\n{ "liked": true,\n  "likes": 128 }', hl:['server','laneRes','netModule'], packet:'pRes' },
   { area:'fe', title:'화면 갱신',
-    desc:'JavaScript 엔진이 응답을 받아 HTML 내용을 변경하고, 렌더링 엔진이 변경된 부분을 화면에 다시 그립니다. 하트가 채워지고 좋아요 수가 128로 표시됩니다.',
-    cap:'응답을 화면에 반영 (JavaScript)',
-    code:"// 응답 내용을 읽어 HTML 변경\nconst data = await response.json();\nlike.textContent = '♥';\nlike.classList.add('on');\ncount.textContent = data.likes;  // 128", hl:['jsEngine','renderEngine','viewport'] }
+    desc:'JavaScript 엔진이 응답에 따라 HTML을 변경하고, 렌더링 엔진이 화면을 다시 그립니다. 좋아요 수가 128로 표시됩니다.',
+    code:"// 화면 갱신 (JavaScript)\nconst data = await res.json();\nlike.textContent = '♥';\ncount.textContent = data.likes;", hl:['jsEngine','renderEngine','viewport'] }
 ];
 const LAST = steps.length - 1;
+
+const consoleText = [
+  '<span class="go">●</span> 요청 대기 중…',
+  '<span class="go">●</span> 요청 대기 중…',
+  '<span class="go">●</span> 요청 대기 중…',
+  '<span class="go">●</span> 요청 대기 중…\n<span class="go">→</span> 요청 수신 중',
+  '<span class="go">→</span> POST /api/posts/42/like\n<span class="ok">✓</span> 로그인 사용자 확인\n<span class="ok">✓</span> 중복 요청 확인',
+  '<span class="ok">✓</span> 검증 완료\n<span class="go">→</span> 데이터베이스 갱신\n<span class="ok">✓</span> 좋아요 수 128 저장',
+  '<span class="go">→</span> 응답 전송: 200 OK\n   likes: 128',
+  '<span class="ok">✓</span> 응답 전송 완료\n<span class="go">●</span> 다음 요청 대기 중…'
+];
 
 const $ = id => document.getElementById(id);
 let cur = 0, timer = null;
 
-/* 단계 목록 생성 */
 steps.slice(1).forEach((s, i) => {
   const el = document.createElement('div');
   el.className = 'st';
   el.style.setProperty('--c', AREA[s.area].color);
-  el.innerHTML = `<span class="n">${i+1}</span>${s.title}<span class="a">${AREA[s.area].name}</span>`;
+  el.innerHTML = `<span class="n">${i+1}</span>${s.title}`;
   el.onclick = () => { stop(); go(i+1); };
   $('stepper').appendChild(el);
 });
@@ -306,17 +285,6 @@ function renderCode(text){
   });
 }
 
-const consoleText = [
-  '<span class="go">●</span> 요청 대기 중…',
-  '<span class="go">●</span> 요청 대기 중…',
-  '<span class="go">●</span> 요청 대기 중…',
-  '<span class="go">●</span> 요청 대기 중…\n<span class="go">→</span> 요청 수신 예정: POST /api/posts/42/like',
-  '<span class="go">→</span> 요청 수신: POST /api/posts/42/like\n<span class="ok">✓</span> 로그인 사용자 확인\n<span class="ok">✓</span> 중복 좋아요 여부 확인',
-  '<span class="ok">✓</span> 검증 완료\n<span class="go">→</span> 데이터베이스에 갱신 요청\n<span class="ok">✓</span> 좋아요 수 저장: 128',
-  '<span class="ok">✓</span> 처리 완료\n<span class="go">→</span> 응답 전송: 200 OK\n   { "liked": true, "likes": 128 }',
-  '<span class="ok">✓</span> 응답 전송 완료\n<span class="go">●</span> 다음 요청 대기 중…'
-];
-
 function go(n){
   const prev = cur;
   cur = Math.max(0, Math.min(LAST, n));
@@ -331,35 +299,29 @@ function go(n){
   $('area').style.background = a.color;
   $('stTitle').textContent = s.title;
   $('stDesc').textContent = s.desc;
-  $('codeCap').textContent = s.cap;
   renderCode(s.code);
 
   document.querySelectorAll('[data-hl]').forEach(el => {
     const on = s.hl.includes(el.dataset.hl);
-    if (el.tagName === 'path') el.classList.toggle('on', on);
-    else el.classList.toggle('hl', on);
+    el.classList.toggle(el.tagName === 'path' ? 'on' : 'hl', on);
   });
 
-  /* 좋아요 버튼 상태 */
   const btn = $('likeBtn');
   const liked = cur >= 7;
   btn.textContent = liked ? '♥' : '♡';
   btn.classList.toggle('on', liked);
+  btn.classList.toggle('idle', cur === 0);
   $('likeCount').textContent = `좋아요 ${liked ? 128 : 127}개`;
   btn.classList.remove('press','pop');
   if (cur === 1) btn.classList.add('press');
   if (cur === 7 && prev !== 7) { void btn.offsetWidth; btn.classList.add('pop'); }
-  $('hint').style.visibility = cur === 0 ? 'visible' : 'hidden';
 
-  /* 데이터베이스 */
   const v = $('dbVal');
   v.textContent = cur >= 5 ? '128' : '127';
   v.classList.toggle('flash', cur === 5);
 
-  /* 서버 상태 */
   $('console').innerHTML = consoleText[cur];
 
-  /* 데이터 이동 */
   ['pReq','pRes'].forEach(id => {
     const p = $(id); p.classList.remove('go');
     if (s.packet === id) { void p.offsetWidth; p.classList.add('go'); }
@@ -392,11 +354,11 @@ $('likeBtn').onclick = () => {
 
 /* 화면 크기에 맞춰 비율 유지 */
 function fit(){
-  const k = Math.min(innerWidth / 1100, innerHeight / 712);
+  const k = Math.min(innerWidth / 760, innerHeight / 534);
   const st = $('stage');
   st.style.transform = `scale(${k})`;
-  st.style.left = (innerWidth - 1100 * k) / 2 + 'px';
-  st.style.top = (innerHeight - 712 * k) / 2 + 'px';
+  st.style.left = (innerWidth - 760 * k) / 2 + 'px';
+  st.style.top = (innerHeight - 534 * k) / 2 + 'px';
 }
 addEventListener('resize', fit);
 fit();
