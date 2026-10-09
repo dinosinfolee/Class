@@ -126,6 +126,26 @@
   #stDesc{font-size:15px;line-height:1.6;color:#374151;margin-top:6px;word-break:keep-all}
   #code{position:absolute;left:428px;top:46px;width:296px;height:112px;background:#0f172a;border-radius:8px;padding:7px 11px;font-family:var(--mono);font-size:12px;line-height:1.45;color:#e2e8f0;white-space:pre;overflow:hidden}
   #code .cm{color:#7dd3a8}
+
+  /* 요청 방식 안내 */
+  .info{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;margin-left:4px;border-radius:50%;border:1.2px solid var(--api);background:#fff;color:var(--api);font:800 9.5px/1 Georgia,serif;font-style:italic;cursor:pointer;vertical-align:1px;padding:0}
+  .info:hover{background:var(--api);color:#fff}
+  #modal{position:absolute;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.28);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);opacity:0;pointer-events:none;transition:opacity .25s}
+  #modal.open{opacity:1;pointer-events:auto}
+  .mbox{width:540px;background:#fff;border-radius:14px;padding:18px 20px 16px;box-shadow:0 18px 40px rgba(0,0,0,.25);transform:translateY(8px);transition:transform .25s}
+  #modal.open .mbox{transform:none}
+  .mhead{display:flex;align-items:center;justify-content:space-between}
+  .mhead b{font-size:18px;font-weight:800;letter-spacing:-.4px}
+  .mx{width:28px;height:28px;border-radius:50%;border:none;background:#f3f4f6;font-size:16px;cursor:pointer;color:#374151}
+  .mx:hover{background:#e5e7eb}
+  .mdesc{word-break:keep-all;font-size:14px;color:#374151;margin-top:6px;line-height:1.55}
+  .mt{width:100%;border-collapse:collapse;margin-top:12px;font-size:13.5px}
+  .mt th{background:#f9fafb;color:#4b5563;font-weight:700;text-align:left;padding:7px 10px;border-bottom:1px solid var(--line)}
+  .mt td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+  .mt td:first-child{width:96px}
+  .mth{display:inline-block;font-family:var(--mono);font-size:12.5px;font-weight:800;color:#fff;border-radius:5px;padding:2px 7px}
+  .mt tr.cur td{background:#fffbeb}
+  .mnote{word-break:keep-all;margin-top:12px;font-size:13.5px;line-height:1.55;background:#fffbeb;border-radius:8px;padding:9px 12px;color:#78350f}
 </style>
 </head>
 <body>
@@ -135,9 +155,9 @@
 
   <!-- 영역 -->
   <div class="abs zone" id="zKey"><h3>API 키<span>API Key</span></h3><p>신용카드 정보와 같은 역할</p></div>
-  <div class="abs zone" id="zApp"><h3>내 웹앱</h3><p>API를 이용하는 쪽</p></div>
+  <div class="abs zone" id="zApp"><h3>클라이언트<span>Client</span></h3><p>예: 내 웹앱</p></div>
   <div class="abs zone" id="zApi"><h3>API</h3><p>정해진 요청 창구</p></div>
-  <div class="abs zone" id="zSvc"><h3>AI 서비스<span>회사 서버</span></h3><p>기능을 제공하는 쪽</p></div>
+  <div class="abs zone" id="zSvc"><h3>서버<span>Server</span></h3><p>예: 제미나이, 클로드, GPT</p></div>
 
   <!-- 신용카드와 API 키 -->
   <div class="abs" id="card" data-hl="card" style="--c:var(--key)">
@@ -177,14 +197,14 @@
   <div class="abs box" id="gate" data-hl="gate" style="--c:var(--api)">
     <div class="gT">요청 규칙</div>
     <div class="rule"><span class="fl">주소</span><span class="v">/v1/translate</span></div>
-    <div class="rule"><span class="fl">방식</span><span class="v">POST</span></div>
+    <div class="rule"><span class="fl">방식</span><span class="v">POST</span><button class="info" id="infoBtn" aria-label="요청 방식 설명">i</button></div>
     <div class="rule"><span class="fl">인증</span><span class="v">API 키 필수</span></div>
     <div id="check"><span class="fl">키 확인</span><span id="checkV">대기</span></div>
   </div>
 
   <!-- AI 서비스 -->
   <div class="abs box" id="server" data-hl="server" style="--c:var(--svc)">
-    <div class="bh"><div class="ico">AI</div><b>AI 서버</b></div>
+    <div class="bh"><div class="ico">S</div><b>서버</b></div>
     <div id="console"></div>
   </div>
   <div class="abs box" id="bill" data-hl="bill" style="--c:var(--svc)">
@@ -213,32 +233,49 @@
     <button id="bNext">다음 ▶</button>
     <button id="bPlay" class="primary">▶ 자동 재생</button>
   </div>
+
+  <!-- 요청 방식 안내 팝업 -->
+  <div id="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="mbox">
+      <div class="mhead"><b id="mTitle">HTTP 요청 방식</b><button class="mx" id="mClose" aria-label="닫기">✕</button></div>
+      <div class="mdesc">요청 방식은 서버에 <b>무엇을 하려는지</b> 알리는 표시입니다. 어떤 방식을 사용할지는 API를 만든 회사가 기능에 맞게 정합니다.</div>
+      <table class="mt">
+        <tr><th>방식</th><th>의미</th><th>예시</th></tr>
+        <tr><td><span class="mth" style="background:#2563eb">GET</span></td><td>데이터 조회</td><td>날씨 정보, 게시물 목록 가져오기</td></tr>
+        <tr class="cur"><td><span class="mth" style="background:#d97706">POST</span></td><td>데이터 전송, 작업 요청</td><td>번역, AI 답변 생성, 글 작성</td></tr>
+        <tr><td><span class="mth" style="background:#7c3aed">PUT</span></td><td>데이터 전체 수정</td><td>프로필 정보 전체 변경</td></tr>
+        <tr><td><span class="mth" style="background:#0891b2">PATCH</span></td><td>데이터 일부 수정</td><td>닉네임만 변경</td></tr>
+        <tr><td><span class="mth" style="background:#dc2626">DELETE</span></td><td>데이터 삭제</td><td>게시물 삭제</td></tr>
+      </table>
+      <div class="mnote">이 예시의 번역 API는 입력 텍스트를 서버로 보내야 하므로 <b>POST</b>를 사용합니다. 제미나이, 클로드, GPT 같은 AI 서비스의 API도 대부분 POST를 사용합니다.</div>
+    </div>
+  </div>
 </div>
 
 <script>
 const AREA = {
   intro:{name:'안내',     color:'#1f2937'},
-  app:  {name:'내 웹앱',  color:'#2563eb'},
+  app:  {name:'클라이언트', color:'#2563eb'},
   api:  {name:'API',      color:'#d97706'},
-  svc:  {name:'AI 서비스', color:'#059669'},
+  svc:  {name:'서버', color:'#059669'},
   risk: {name:'보안',     color:'#dc2626'}
 };
 
 const steps = [
   { area:'intro', title:'API와 API 키',
-    desc:'API는 프로그램끼리 기능을 요청하고 제공하는 정해진 창구입니다. API 키는 그 창구를 이용하는 사람을 확인하는 비밀 정보입니다.',
+    desc:'API는 클라이언트와 서버가 기능을 요청하고 제공하는 정해진 창구입니다. API 키는 그 창구를 이용하는 사람을 확인하는 비밀 정보입니다.',
     code:'// API 요청 = 규칙에 맞춘 주문서\nPOST /v1/translate\nAuthorization: Bearer sk-A7f3…\n{ "text": "안녕하세요" }', hl:[] },
   { area:'app', title:'요청 작성',
-    desc:'사용자가 [번역] 버튼을 누르면 웹앱이 API 규칙에 맞춰 요청을 작성하고, 요청에 API 키를 첨부합니다.',
+    desc:'사용자가 [번역] 버튼을 누르면 클라이언트(내 웹앱)가 API 규칙에 맞춰 요청을 작성하고, 요청에 API 키를 첨부합니다.',
     code:"// API 키를 첨부하여 요청 작성\nfetch(API_URL, {\n  method: 'POST',\n  headers: { Authorization: KEY },\n  body: '{\"text\":\"안녕하세요\"}' });", hl:['app','keyBox'] },
   { area:'api', title:'요청 전송',
-    desc:'요청이 인터넷을 통해 AI 서비스의 API 창구로 전달됩니다. 정해진 주소와 형식을 지키지 않으면 처리되지 않습니다.',
-    code:'// 실제로 전송되는 HTTP 요청\nPOST /v1/translate HTTP/1.1\nHost: api.ai-service.com\nAuthorization: Bearer sk-A7f3…', hl:['laneReq','gate'], packet:'pReq' },
+    desc:'요청이 인터넷을 통해 서버의 API 창구로 전달됩니다. 정해진 주소와 형식을 지키지 않으면 처리되지 않습니다.',
+    code:'// 실제로 전송되는 HTTP 요청\nPOST /v1/translate HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer sk-A7f3…', hl:['laneReq','gate'], packet:'pReq' },
   { area:'api', title:'키 확인',
-    desc:'서비스는 API 키로 요청한 사람과 사용 권한을 확인합니다. 카드 결제 시 카드 번호, 유효기간, CVC를 확인하는 것과 같습니다.',
-    code:'// 서비스 회사 서버 (예시)\nconst owner = findOwner(key);\nif (!owner) return 401; // 거부\n// 유효한 키 → 요청 처리', hl:['gate','keyBox','card'] },
+    desc:'서버는 API 키로 요청한 사람과 사용 권한을 확인합니다. 카드 결제 시 카드 번호, 유효기간, CVC를 확인하는 것과 같습니다.',
+    code:'// 서버 코드 (예시)\nconst owner = findOwner(key);\nif (!owner) return 401; // 거부\n// 유효한 키 → 요청 처리', hl:['gate','keyBox','card'] },
   { area:'svc', title:'실행·응답',
-    desc:'AI 서비스가 번역 기능을 실행하고 결과를 반환합니다. 웹앱은 결과를 받아 화면에 표시합니다.',
+    desc:'서버가 번역 기능을 실행하고 결과를 반환합니다. 클라이언트는 결과를 받아 화면에 표시합니다.',
     code:'// 서버가 반환하는 응답\nHTTP/1.1 200 OK\n\n{ "result": "Hello" }', hl:['server','laneRes','app'], packet:'pRes' },
   { area:'svc', title:'요금 청구',
     desc:'사용량만큼 요금이 API 키 주인의 계정에 청구됩니다. 카드 결제 대금이 카드 주인에게 청구되는 것과 같습니다.',
@@ -356,6 +393,15 @@ $('bPlay').onclick = () => timer ? stop() : play();
 $('bNext').onclick = () => { stop(); go(cur + 1); };
 $('bPrev').onclick = () => { stop(); go(cur - 1); };
 $('bReset').onclick = () => { stop(); go(0); };
+
+/* 요청 방식 안내 팝업 */
+const modal = $('modal');
+function openModal(){ stop(); modal.classList.add('open'); }
+function closeModal(){ modal.classList.remove('open'); }
+$('infoBtn').onclick = openModal;
+$('mClose').onclick = closeModal;
+modal.onclick = e => { if (e.target === modal) closeModal(); };
+addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
 function fit(){
   const k = Math.min(innerWidth / 760, innerHeight / 534);
