@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>정적 호스팅과 동적 호스팅</title>
+<style>
+  :root{
+    --ink:#1f2937; --muted:#6b7280; --line:#e5e7eb;
+    --st:#2563eb; --st-bg:#eff5ff;
+    --dy:#059669; --dy-bg:#ecfdf5;
+    --fn:#7c3aed;
+    --net:#d97706; --net-bg:#fffbeb;
+    --risk:#dc2626;
+    --mono:ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:#fff}
+  @media (prefers-color-scheme: dark){ html,body{background:#191919} }
+  body{font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;color:var(--ink)}
+  #stage{position:absolute;left:0;top:0;width:760px;height:534px;transform-origin:0 0;background:#fff;border-radius:18px;overflow:hidden}
+  .abs{position:absolute}
+
+  .title{left:14px;top:12px;font-size:20px;font-weight:800;letter-spacing:-.6px}
+  .controls{left:0;right:0;top:492px;display:flex;justify-content:center;gap:8px}
+  .controls button{font:inherit;font-size:14px;font-weight:700;padding:7px 16px;border-radius:7px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+  .controls button:hover:not(:disabled){background:#f3f4f6}
+  .controls button:disabled{opacity:.35;cursor:default}
+  .controls .primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .controls .primary:hover{background:#374151 !important}
+
+  /* 영역 */
+  .zone{top:52px;height:254px;border-radius:12px;padding:7px 10px}
+  .zone h3{font-size:15px;font-weight:800;letter-spacing:-.3px;line-height:1.25}
+  .zone h3 span{font-size:12px;font-weight:700;opacity:.75;margin-left:4px}
+  .zone p{font-size:12px;color:#4b5563;margin-top:1px;white-space:nowrap}
+  #zUser{left:12px;width:232px;background:var(--st-bg)} #zUser h3{color:var(--st)}
+  #zNet{left:250px;width:88px;background:var(--net-bg);text-align:center;padding:7px 4px} #zNet h3{color:var(--net)}
+  #zSrv{left:344px;width:404px;background:#f3f4f6;transition:background .4s}
+  #zSrv h3{color:#374151}
+  #mode{position:absolute;right:10px;top:8px;font-size:12px;font-weight:800;color:#fff;border-radius:5px;padding:2px 8px;line-height:16px;transition:background .3s}
+  #modeEx{position:absolute;right:10px;top:30px;font-size:12px;color:#4b5563}
+
+  /* 브라우저 */
+  .win{left:22px;width:212px;background:#fff;border:1px solid #cbd5e1;border-radius:9px;overflow:hidden;transition:box-shadow .3s}
+  #wA{top:98px;height:98px}
+  #wB{top:206px;height:92px;position:absolute}
+  .bar{height:22px;background:#e8ecf2;display:flex;align-items:center;gap:6px;padding:0 7px;font-size:12px;color:#475569}
+  .bar i{width:7px;height:7px;border-radius:50%;display:block}
+  .bar b{font-weight:800;color:#334155}
+  .bar span{margin-left:auto;font-size:11.5px}
+  .page{padding:7px 9px;font-size:13px;line-height:1.45;position:relative}
+  .pt{font-size:13.5px;font-weight:800;display:block}
+  .pd{color:#374151}
+  .ph{color:#9ca3af;font-size:13px;padding-top:12px;text-align:center}
+  .ai{margin-top:3px;font-size:12px;font-weight:700;color:var(--fn);background:#f5f3ff;border-radius:5px;padding:1px 6px;display:inline-block}
+  .src{font-size:12px;color:var(--risk);font-weight:700}
+  .src code{display:block;margin-top:3px;font-family:var(--mono);font-size:12px;background:#fef2f2;border:1px solid #fecaca;border-radius:5px;padding:2px 6px;color:#991b1b}
+  #cmp{position:absolute;right:7px;bottom:6px;font-size:12px;font-weight:800;color:#fff;border-radius:4px;padding:0 6px;line-height:18px;opacity:0;transition:opacity .3s}
+
+  /* 서버 내부 */
+  .box{position:absolute;background:#fff;border:1px solid #d1d5db;border-radius:9px;padding:8px;transition:box-shadow .3s,opacity .3s,border-color .3s}
+  #files{left:354px;top:98px;width:180px;height:200px}
+  #exec{left:542px;top:98px;width:196px;height:110px}
+  #db{left:542px;top:216px;width:196px;height:82px}
+  .bh{display:flex;align-items:center;gap:6px;height:22px}
+  .ico{width:22px;height:22px;border-radius:6px;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex:none;background:#6b7280}
+  .bh b{font-size:14px;font-weight:800;white-space:nowrap}
+  .fl{list-style:none;margin-top:7px;display:flex;flex-direction:column;gap:5px}
+  .fl li{font-family:var(--mono);font-size:12.5px;font-weight:700;border:1px solid var(--line);border-radius:6px;padding:4px 7px;display:flex;justify-content:space-between;align-items:center;transition:background .4s,border-color .3s,opacity .4s}
+  .fl li em{font-style:normal;font-family:inherit;font-size:11.5px;font-weight:600;color:var(--muted)}
+  .fl li.flash{background:#fef9c3}
+  .fl li.warn{border-color:#fca5a5;background:#fef2f2}
+  .fl li.warn em{color:var(--risk);font-weight:800}
+  .fl.empty li{opacity:.2}
+  #fileNote{margin-top:8px;font-size:12px;color:#4b5563;line-height:1.4}
+  #console{margin-top:6px;height:64px;background:#0f172a;border-radius:6px;padding:4px 8px;font-family:var(--mono);font-size:12px;line-height:1.4;color:#cbd5e1;white-space:pre;overflow:hidden}
+  #console .ok{color:#4ade80} #console .go{color:#fbbf24} #console .no{color:#f87171}
+  table{margin-top:5px;width:100%;border-collapse:collapse;font-size:12.5px}
+  td{border:1px solid #e5e7eb;padding:2px 7px;height:21px}
+  td.num{font-family:var(--mono);font-weight:800;text-align:right}
+  .off{opacity:.38}
+  .offTag{position:absolute;right:8px;top:9px;font-size:12px;font-weight:800;color:var(--risk);display:none}
+  .off .offTag{display:block}
+  .off #console{visibility:hidden}
+
+  .hl{box-shadow:0 0 0 3px var(--c),0 5px 14px rgba(0,0,0,.12) !important;opacity:1 !important}
+
+  /* 경로 */
+  #lanes{position:absolute;left:0;top:0;pointer-events:none}
+  #lanes path{fill:none;stroke-width:2.5;stroke-dasharray:5 5;opacity:.35;transition:opacity .3s,stroke-width .3s}
+  #lanes path.on{opacity:1;stroke-width:3.5;animation:dash .6s linear infinite}
+  @keyframes dash{to{stroke-dashoffset:-10}}
+  .packet{position:absolute;left:0;top:0;offset-anchor:50% 50%;offset-rotate:0deg;font-size:12px;font-weight:800;color:#fff;padding:3px 8px;border-radius:12px;white-space:nowrap;opacity:0;pointer-events:none;box-shadow:0 3px 8px rgba(0,0,0,.2);z-index:5}
+  .packet.go{opacity:1;animation:travel 1.6s ease-in-out forwards}
+  @keyframes travel{from{offset-distance:0%}to{offset-distance:100%}}
+  #pReqA{background:var(--net);offset-path:path('M 234 134 L 354 134')}
+  #pReqB{background:var(--net);offset-path:path('M 234 238 L 354 238')}
+  #pResA{background:var(--st);offset-path:path('M 354 160 L 234 160')}
+  #pResB{background:var(--st);offset-path:path('M 354 264 L 234 264')}
+  #pFn{background:var(--fn);offset-path:path('M 234 128 L 542 128')}
+  #pFnRes{background:var(--fn);offset-path:path('M 542 176 L 234 176')}
+  #pFnRes.go{animation:travelLate 3.2s ease-in-out forwards}
+  @keyframes travelLate{0%,50%{offset-distance:0%;opacity:0}52%{opacity:1}100%{offset-distance:100%;opacity:1}}
+
+  /* 하단 설명 */
+  #panel{left:12px;top:314px;width:736px;height:168px;border:1px solid var(--line);border-radius:12px;background:#fff}
+  #stepper{position:absolute;left:10px;top:9px;right:10px;display:flex;gap:4px}
+  .st{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;height:26px;border-radius:13px;cursor:pointer;font-size:12px;font-weight:700;color:#9ca3af;background:#f9fafb;white-space:nowrap}
+  .st .n{width:17px;height:17px;border-radius:50%;border:1.5px solid currentColor;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;flex:none}
+  .st.done{color:#4b5563}
+  .st.done .n{border-color:var(--c);color:var(--c)}
+  .st.cur{color:#fff;background:var(--c)}
+  .st.cur .n{border-color:#fff;color:#fff}
+  #explain{position:absolute;left:14px;top:46px;width:404px}
+  .head{display:flex;align-items:center;gap:8px}
+  #area{font-size:12px;font-weight:800;color:#fff;padding:1px 7px;border-radius:4px;line-height:18px}
+  #stTitle{font-size:18px;font-weight:800;letter-spacing:-.4px}
+  #stDesc{font-size:15px;line-height:1.6;color:#374151;margin-top:6px;word-break:keep-all}
+  #code{position:absolute;left:428px;top:46px;width:296px;height:112px;background:#0f172a;border-radius:8px;padding:6px 11px;font-family:var(--mono);font-size:12px;line-height:1.4;color:#e2e8f0;white-space:pre;overflow:hidden}
+  #code .cm{color:#7dd3a8}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <div class="abs title">호스팅은 어떻게 동작할까?</div>
+
+  <!-- 영역 -->
+  <div class="abs zone" id="zUser"><h3>사용자<span>브라우저</span></h3><p>주소로 접속하여 웹사이트를 이용</p></div>
+  <div class="abs zone" id="zNet"><h3>인터넷</h3><p>요청·응답 경로</p></div>
+  <div class="abs zone" id="zSrv">
+    <h3>호스팅 서버<span>Hosting Server</span></h3><p>웹사이트 파일을 보관하고 전달</p>
+    <div id="mode"></div><div id="modeEx"></div>
+  </div>
+
+  <!-- 경로 -->
+  <svg id="lanes" width="760" height="534" viewBox="0 0 760 534">
+    <path data-hl="lReqA" d="M 234 134 L 354 134" stroke="#d97706"/>
+    <path data-hl="lResA" d="M 354 160 L 234 160" stroke="#2563eb"/>
+    <path data-hl="lReqB" d="M 234 238 L 354 238" stroke="#d97706"/>
+    <path data-hl="lResB" d="M 354 264 L 234 264" stroke="#2563eb"/>
+  </svg>
+
+  <!-- 브라우저 -->
+  <div class="abs win" id="wA" data-hl="wA" style="--c:var(--st)">
+    <div class="bar"><i style="background:#f87171"></i><i style="background:#fbbf24"></i><i style="background:#4ade80"></i><b>학생 A</b><span>myclass.site</span></div>
+    <div class="page" id="pageA"></div>
+  </div>
+  <div class="abs win" id="wB" data-hl="wB" style="--c:var(--st)">
+    <div class="bar"><i style="background:#f87171"></i><i style="background:#fbbf24"></i><i style="background:#4ade80"></i><b>학생 B</b><span>myclass.site</span></div>
+    <div class="page" id="pageB"></div><div id="cmp"></div>
+  </div>
+
+  <!-- 서버 내부 -->
+  <div class="box" id="files" data-hl="files" style="--c:var(--st)">
+    <div class="bh"><div class="ico" style="background:var(--st)">F</div><b>저장된 파일</b></div>
+    <ul class="fl" id="fl">
+      <li id="f1">index.html<em>구조</em></li>
+      <li id="f2">style.css<em>디자인</em></li>
+      <li id="f3">app.js<em id="f3t">동작</em></li>
+    </ul>
+    <div id="fileNote"></div>
+  </div>
+  <div class="box" id="exec" data-hl="exec" style="--c:var(--dy)">
+    <div class="bh"><div class="ico" id="execIco">&lt;/&gt;</div><b id="execT">코드 실행</b></div>
+    <span class="offTag">✗ 기능 없음</span>
+    <div id="console"></div>
+  </div>
+  <div class="box" id="db" data-hl="db" style="--c:var(--dy)">
+    <div class="bh"><div class="ico" id="dbIco">DB</div><b>데이터 저장</b></div>
+    <span class="offTag" id="dbOff">✗ 기능 없음</span>
+    <table><tr><td>김민지</td><td class="num">3건</td></tr><tr><td>이서준</td><td class="num">1건</td></tr></table>
+  </div>
+
+  <div class="packet" id="pReqA">요청</div>
+  <div class="packet" id="pReqB">요청</div>
+  <div class="packet" id="pResA">파일</div>
+  <div class="packet" id="pResB">파일</div>
+  <div class="packet" id="pFn">AI 피드백 요청</div>
+  <div class="packet" id="pFnRes">피드백 결과</div>
+
+  <!-- 하단 설명 -->
+  <div class="abs" id="panel">
+    <div id="stepper"></div>
+    <div id="explain">
+      <div class="head"><span id="area"></span><span id="stTitle"></span></div>
+      <div id="stDesc"></div>
+    </div>
+    <div id="code"></div>
+  </div>
+
+  <div class="abs controls">
+    <button id="bReset">↺ 초기화</button>
+    <button id="bPrev">◀ 이전</button>
+    <button id="bNext">다음 ▶</button>
+    <button id="bPlay" class="primary">▶ 자동 재생</button>
+  </div>
+</div>
+
+<script>
+const AREA = {
+  intro:{name:'안내',        color:'#1f2937'},
+  st:   {name:'정적 호스팅', color:'#2563eb'},
+  net:  {name:'네트워크',    color:'#d97706'},
+  risk: {name:'한계',        color:'#dc2626'},
+  dy:   {name:'동적 호스팅', color:'#059669'},
+  fn:   {name:'서버 함수',   color:'#7c3aed'},
+  sum:  {name:'정리',        color:'#1f2937'}
+};
+const MODE = {
+  none:{label:'호스팅 방식',        color:'#6b7280', ex:'', bg:'#f3f4f6'},
+  st:  {label:'정적 호스팅',        color:'#2563eb', ex:'예: GitHub Pages', bg:'#eff5ff'},
+  dy:  {label:'동적 호스팅',        color:'#059669', ex:'예: Google Apps Script', bg:'#ecfdf5'},
+  fn:  {label:'혼합 방식',          color:'#7c3aed', ex:'예: Netlify, Vercel, Cloudflare', bg:'#f5f3ff'}
+};
+
+const P = {
+  wait:'<div class="ph">주소 입력 대기</div>',
+  load:'<div class="ph">접속 중…</div>',
+  st:'<b class="pt">3학년 2반 수업 안내</b><div class="pd">과제: 10월 20일까지 제출</div>',
+  src:'<div class="src">app.js 열람 결과<code>API_KEY = \'sk-A7f3…\'<br>ADMIN_PW = \'class2026!\'</code></div>',
+  dyA:'<b class="pt">김민지님, 환영합니다</b><div class="pd">제출한 과제 <b>3건</b></div>',
+  dyB:'<b class="pt">이서준님, 환영합니다</b><div class="pd">제출한 과제 <b>1건</b></div>',
+  fnA:'<b class="pt">3학년 2반 수업 안내</b><div class="pd">과제: 10월 20일까지 제출</div><span class="ai">AI 피드백 결과: 근거가 명확함</span>'
+};
+
+const steps = [
+  { area:'intro', mode:'none', title:'호스팅이란?', A:P.wait, B:P.wait, files:false,
+    desc:'호스팅은 웹사이트 파일을 서버에 올려 누구나 주소로 접속할 수 있게 하는 것입니다. 처리 방식에 따라 정적·동적 호스팅으로 나뉩니다.',
+    code:'// 호스팅 전: 내 컴퓨터에서만 열람\nfile:///C:/수업/index.html\n\n// 호스팅 후: 누구나 주소로 접속\nhttps://myclass.site', hl:[] },
+  { area:'st', mode:'st', title:'파일 업로드', A:P.wait, B:P.wait, files:true, flash:true,
+    desc:'완성한 HTML·CSS·JavaScript 파일을 호스팅 서버에 올리면 웹사이트 주소가 생깁니다.',
+    code:'// 서버에 올린 파일\nindex.html   // 화면 구조\nstyle.css    // 디자인\napp.js       // 동작', hl:['files'] },
+  { area:'net', mode:'st', title:'접속 요청', A:P.load, B:P.load, files:true,
+    desc:'학생들이 주소를 입력하면 각 브라우저가 서버에 웹사이트 파일을 요청합니다.',
+    code:'// 브라우저가 보내는 요청\nGET /index.html HTTP/1.1\nHost: myclass.site', hl:['lReqA','lReqB'], packets:['pReqA','pReqB'] },
+  { area:'st', mode:'st', title:'파일 전달', A:P.st, B:P.st, files:true, cmp:'same',
+    desc:'정적 호스팅은 저장된 파일을 그대로 전달합니다. 서버에서 코드를 실행하지 않아 누가 접속해도 같은 화면이 표시됩니다.',
+    code:'// 서버의 응답: 저장된 파일 그대로\nHTTP/1.1 200 OK\n\n<h1>3학년 2반 수업 안내</h1>\n<p>과제: 10월 20일까지 제출</p>', hl:['files','lResA','lResB','wA','wB'], packets:['pResA','pResB'] },
+  { area:'risk', mode:'st', title:'정적의 한계', A:P.src, B:P.st, files:true, warn:true,
+    desc:'전달된 파일은 누구나 열어 볼 수 있어 API 키, 비밀번호 같은 비밀 정보를 코드에 넣으면 노출됩니다. 데이터 저장과 로그인도 처리할 수 없습니다.',
+    code:'// 브라우저에서 app.js를 열면\nconst API_KEY = \'sk-A7f3x9Q2…\';\nconst ADMIN_PW = \'class2026!\';\n// → 비밀 정보가 그대로 보임\n// → 데이터 저장·로그인 불가', hl:['wA','exec','db'], hlColor:'#dc2626' },
+  { area:'dy', mode:'dy', title:'동적 호스팅', A:P.dyA, B:P.dyB, files:true, cmp:'diff',
+    desc:'동적 호스팅은 요청마다 서버에서 코드를 실행해 결과를 만듭니다. 사용자마다 다른 화면을 보여 줄 수 있고, 비밀 정보도 서버에 안전하게 보관합니다.',
+    code:'// 요청마다 서버에서 실행\nconst user = login(req);\nconst n = db.count(user);\nres.send(`${user}님, 제출 ${n}건`);', hl:['exec','db','wA','wB','lResA','lResB'], packets:['pResA','pResB'], resLabel:'결과' },
+  { area:'fn', mode:'fn', title:'혼합 방식', A:P.fnA, B:P.st, files:true, cmp:'base',
+    desc:'Netlify와 같은 플랫폼은 화면은 정적으로 전달하고, 필요한 기능만 서버 함수로 실행합니다. 정적 호스팅에 동적 기능을 일부 더한 방식입니다.',
+    code:'// 화면: 정적 파일 그대로 전달\n// 서버 함수: 버튼을 누를 때만 실행\nexport default async (req) => {\n  const KEY = process.env.API_KEY;\n  return callAI(KEY, req.text);\n};', hl:['exec','wA'], packets:['pFn','pFnRes'] },
+  { area:'sum', mode:'none', title:'플랫폼 정리', A:P.st, B:P.st, files:true,
+    desc:'GitHub Pages와 같은 플랫폼은 정적 호스팅만 가능하고, Netlify와 같은 플랫폼은 서버 함수로 동적 기능도 제공합니다.',
+    code:'GitHub Pages와 같은 플랫폼\n// → 정적 호스팅만 가능\nNetlify·Vercel·Cloudflare와 같은 플랫폼\n// → 정적 + 동적(서버 함수) 모두 가능\nGoogle Apps Script와 같은 플랫폼\n// → 서버 코드 실행 중심 (동적)', hl:[] }
+];
+const LAST = steps.length - 1;
+
+const consoleText = {
+  none:'<span class="go">●</span> 방식에 따라 다름',
+  st:'',
+  dy:'<span class="go">→</span> 요청 수신: 김민지\n<span class="go">→</span> 데이터 조회: 3건\n<span class="ok">✓</span> 맞춤 화면 생성·전달',
+  fn:'<span class="go">→</span> AI 피드백 요청 수신\n<span class="ok">✓</span> 비밀 키로 AI 호출\n<span class="go">→</span> 결과 반환 후 다시 대기',
+  fnIdle:'<span class="go">●</span> 평소에는 대기\n<span class="go">●</span> 요청 시에만 실행'
+};
+
+const $ = id => document.getElementById(id);
+let cur = 0, timer = null;
+
+steps.slice(1).forEach((s, i) => {
+  const el = document.createElement('div');
+  el.className = 'st';
+  el.style.setProperty('--c', AREA[s.area].color);
+  el.innerHTML = `<span class="n">${i+1}</span>${s.title}`;
+  el.onclick = () => { stop(); go(i+1); };
+  $('stepper').appendChild(el);
+});
+
+function renderCode(text){
+  const box = $('code'); box.innerHTML = '';
+  text.split('\n').forEach((line, i) => {
+    if (i) box.appendChild(document.createTextNode('\n'));
+    const idx = line.indexOf('//');
+    if (idx < 0) { box.appendChild(document.createTextNode(line)); return; }
+    box.appendChild(document.createTextNode(line.slice(0, idx)));
+    const sp = document.createElement('span'); sp.className = 'cm'; sp.textContent = line.slice(idx);
+    box.appendChild(sp);
+  });
+}
+
+function go(n){
+  cur = Math.max(0, Math.min(LAST, n));
+  const s = steps[cur], a = AREA[s.area], m = MODE[s.mode];
+
+  document.querySelectorAll('.st').forEach((el, i) => {
+    el.classList.toggle('cur', i+1 === cur);
+    el.classList.toggle('done', i+1 < cur);
+  });
+  $('area').textContent = cur ? `${cur}단계 · ${a.name}` : a.name;
+  $('area').style.background = a.color;
+  $('stTitle').textContent = s.title;
+  $('stDesc').textContent = s.desc;
+  renderCode(s.code);
+
+  /* 호스팅 방식 표시 */
+  $('mode').textContent = m.label;
+  $('mode').style.background = m.color;
+  $('modeEx').textContent = m.ex;
+  $('zSrv').style.background = m.bg;
+
+  /* 브라우저 화면 */
+  $('pageA').innerHTML = s.A;
+  $('pageB').innerHTML = s.B;
+  const c = $('cmp');
+  c.style.opacity = s.cmp ? 1 : 0;
+  c.textContent = s.cmp === 'same' ? 'A와 같은 화면' : s.cmp === 'diff' ? 'A와 다른 화면' : s.cmp === 'base' ? '기본 화면은 A와 같음' : '';
+  c.style.background = s.cmp === 'diff' ? '#059669' : '#2563eb';
+
+  /* 파일 */
+  $('fl').classList.toggle('empty', !s.files);
+  ['f1','f2','f3'].forEach(id => $(id).classList.toggle('flash', !!s.flash));
+  $('f3').classList.toggle('warn', !!s.warn);
+  $('f3t').textContent = s.warn ? '비밀 정보 노출' : '동작';
+  $('fileNote').textContent = s.mode === 'st' ? '요청이 오면 이 파일을 그대로 전달함'
+    : s.mode === 'dy' ? '화면 틀만 보관하고, 내용은 서버가 생성함'
+    : s.mode === 'fn' ? '화면은 이 파일을 그대로 전달함' : '';
+
+  /* 코드 실행·데이터 저장 */
+  const staticMode = s.mode === 'st';
+  $('exec').classList.toggle('off', staticMode);
+  $('db').classList.toggle('off', staticMode || s.mode === 'fn');
+  $('dbOff').textContent = s.mode === 'fn' ? '필요 시 외부 연동' : '✗ 기능 없음';
+  $('dbOff').style.display = s.mode === 'fn' ? 'none' : '';
+  $('execT').textContent = s.mode === 'fn' ? '서버 함수' : '코드 실행';
+  $('execIco').style.background = s.mode === 'fn' ? '#7c3aed' : s.mode === 'dy' ? '#059669' : '#6b7280';
+  $('dbIco').style.background = s.mode === 'dy' ? '#059669' : '#6b7280';
+  $('console').innerHTML = s.mode === 'st' ? '' : s.mode === 'fn' ? (cur === 6 ? consoleText.fn : consoleText.fnIdle) : consoleText[s.mode];
+
+  /* 강조 */
+  document.querySelectorAll('[data-hl]').forEach(el => {
+    const on = s.hl.includes(el.dataset.hl);
+    if (el.tagName === 'path') { el.classList.toggle('on', on); return; }
+    el.classList.toggle('hl', on);
+    el.style.setProperty('--c', s.hlColor || (el.id === 'exec' && s.mode === 'fn' ? '#7c3aed' : el.id === 'files' || el.id.startsWith('w') ? '#2563eb' : '#059669'));
+  });
+  if (cur === 5) document.querySelectorAll('#wA,#wB').forEach(el => el.style.setProperty('--c', '#059669'));
+  if (cur === 6) $('wA').style.setProperty('--c', '#7c3aed');
+
+  /* 이동 표시 */
+  ['pResA','pResB'].forEach(id => { $(id).textContent = s.resLabel || '파일'; $(id).style.background = s.resLabel ? '#059669' : '#2563eb'; });
+  ['pReqA','pReqB','pResA','pResB','pFn','pFnRes'].forEach(id => {
+    const p = $(id); p.classList.remove('go');
+    if ((s.packets || []).includes(id)) { void p.offsetWidth; p.classList.add('go'); }
+  });
+
+  $('bPrev').disabled = cur === 0;
+  $('bNext').disabled = cur === LAST;
+}
+
+function play(){
+  if (cur === LAST) go(0);
+  $('bPlay').textContent = '❚❚ 일시 정지';
+  go(cur + 1);
+  timer = setInterval(() => { if (cur < LAST) go(cur + 1); if (cur === LAST) stop(); }, 3200);
+}
+function stop(){
+  clearInterval(timer); timer = null;
+  $('bPlay').textContent = '▶ 자동 재생';
+}
+$('bPlay').onclick = () => timer ? stop() : play();
+$('bNext').onclick = () => { stop(); go(cur + 1); };
+$('bPrev').onclick = () => { stop(); go(cur - 1); };
+$('bReset').onclick = () => { stop(); go(0); };
+
+function fit(){
+  const k = Math.min(innerWidth / 760, innerHeight / 534);
+  const st = $('stage');
+  st.style.transform = `scale(${k})`;
+  st.style.left = (innerWidth - 760 * k) / 2 + 'px';
+  st.style.top = (innerHeight - 534 * k) / 2 + 'px';
+}
+addEventListener('resize', fit);
+fit();
+go(0);
+</script>
+</body>
+</html>
